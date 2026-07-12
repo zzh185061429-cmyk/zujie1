@@ -9,7 +9,7 @@ import { cn } from '../utils';
 export function FloorSelector() {
   const [floors, setFloors] = useState<number[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const { viewingFloorId, setViewingFloor, lastAssistantFloorId, isViewingHistory } = useGameContext();
+  const { viewingFloorId, setViewingFloor, lastAssistantFloorId, isViewingHistory, isGenerating, generatingFloorId } = useGameContext();
 
   // 初始化：扫描所有 assistant 楼层
   useEffect(() => {
@@ -18,10 +18,20 @@ export function FloorSelector() {
 
   const handleToggle = useCallback(() => {
     if (!isOpen) {
-      setFloors(getAssistantFloors());
+      // 生成中过滤掉未完成楼层（generatingFloorId 之前的楼层）
+      const allFloors = getAssistantFloors();
+      if (isGenerating && generatingFloorId != null) {
+        // 只显示 generatingFloorId 之前的楼层（已完成的）
+        setFloors(allFloors.filter(f => f < generatingFloorId));
+      } else if (isGenerating) {
+        // 生成中但还不知道目标楼层，显示所有已知楼层
+        setFloors(allFloors);
+      } else {
+        setFloors(allFloors);
+      }
     }
     setIsOpen((p) => !p);
-  }, [isOpen]);
+  }, [isOpen, isGenerating, generatingFloorId]);
 
   const handleSelect = useCallback(
     (floorId: number | null) => {
@@ -32,7 +42,8 @@ export function FloorSelector() {
   );
 
   // 当前显示的楼层号（跟随最新或指定楼层）
-  const displayFloor = viewingFloorId ?? lastAssistantFloorId;
+  // 生成中：显示锁定的楼层；生成完成后：显示 generatingFloorId 作为最新
+  const displayFloor = viewingFloorId ?? (isGenerating ? lastAssistantFloorId : (generatingFloorId ?? lastAssistantFloorId));
 
   return (
     <div className="relative shrink-0">

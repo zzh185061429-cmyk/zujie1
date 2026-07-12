@@ -65,6 +65,14 @@ type GameContextType = {
   isViewingHistory: boolean;
   /** 回到最新楼层 */
   goToLatest: () => void;
+  /** 是否正在生成新楼层 */
+  isGenerating: boolean;
+  /** 正在生成的目标楼层号（生成完成后才暴露） */
+  generatingFloorId: number | null;
+  /** 开始生成：锁定当前画面 */
+  startGenerating: () => void;
+  /** 结束生成：解锁 */
+  finishGenerating: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -210,8 +218,45 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   // ── 虚拟楼层导航 ──
   const [viewingFloorId, setViewingFloor] = useState<number | null>(null);
   const [lastAssistantFloorId, setLastAssistantFloorId] = useState<number | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingFloorId, setGeneratingFloorId] = useState<number | null>(null);
   const isViewingHistory = viewingFloorId !== null;
   const goToLatest = useCallback(() => setViewingFloor(null), []);
+
+  /** 开始生成：记录当前画面楼层并锁定 */
+  const startGenerating = useCallback(() => {
+    // 记录当前正在查看的楼层（如果是跟随最新，则记录 lastAssistantFloorId）
+    const currentFloor = viewingFloorId ?? lastAssistantFloorId;
+    if (currentFloor != null) {
+      setViewingFloor(currentFloor);
+    }
+    setIsGenerating(true);
+    // generatingFloorId 在生成完成后由轮询逻辑设置
+    console.info('[GameContext] 开始生成，锁定画面到楼层', currentFloor);
+  }, [viewingFloorId, lastAssistantFloorId]);
+
+  /** 结束生成：解锁，记录新生成的楼层号 */
+  const finishGenerating = useCallback(() => {
+    setIsGenerating(false);
+    // 获取最新 assistant 楼层作为 generatingFloorId
+    try {
+      const lastId = getLastMessageId();
+      if (lastId != null) {
+        const msg = getChatMessages(lastId)[0];
+        if (msg && msg.role === 'assistant') {
+          setGeneratingFloorId(msg.message_id);
+        } else if (lastId > 0) {
+          const prev = getChatMessages(lastId - 1)[0];
+          if (prev && prev.role === 'assistant') {
+            setGeneratingFloorId(prev.message_id);
+          }
+        }
+      }
+    } catch {
+      // 忽略错误
+    }
+    console.info('[GameContext] 生成完成');
+  }, []);
 
   // ── MVU 同步 + 服务状态机 ──
   React.useEffect(() => {
@@ -250,7 +295,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         const variables = Mvu.getMvuData({ type: 'message', message_id: mvuMsgId });
 
         // ── 跟踪最新 assistant 楼层号 ──
-        setLastAssistantFloorId(mvuMsgId);
+        // 生成中不更新 lastAssistantFloorId，避免画面跳转
+        if (!isGenerating) {
+          setLastAssistantFloorId(mvuMsgId);
+        } else {
+          // 生成中但发现新楼层已完成（mvuMsgId 比 generatingFloorId 大）
+          // 说明生成完成了
+          const currentGenId = generatingFloorId;
+          if (currentGenId == null || mvuMsgId > currentGenId) {
+            // 新楼层已生成，更新 generatingFloorId 但不自动跳转画面
+            setGeneratingFloorId(mvuMsgId);
+          }
+        }
 
         const now = parseMvuTime(variables);
         const dispatch = parseMvuDispatch(variables);
@@ -409,6 +465,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       lastAssistantFloorId,
       isViewingHistory,
       goToLatest,
+      isGenerating,
+      generatingFloorId,
+      startGenerating,
+      finishGenerating,
     }}>
       {children}
     </GameContext.Provider>

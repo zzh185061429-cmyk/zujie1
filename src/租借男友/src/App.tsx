@@ -42,6 +42,7 @@ function AppContent() {
   const [isReadingOpen, setIsReadingOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const { isEyeCareMode, isViewingHistory, viewingFloorId, lastAssistantFloorId, goToLatest } = useGameContext();
@@ -122,26 +123,12 @@ function AppContent() {
       className="w-full h-full flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: '#1a1a1a' }}
     >
-      {/* 缩放容器：使用 transform scale 实现真正的等比例填满 */}
       <div 
-        style={{ 
-          width: scale < 1 ? '1280px' : '100%',
-          height: scale < 1 ? '720px' : '100%',
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          maxWidth: '100%',
-          maxHeight: '100%',
-        }}
+        className={cn(
+          "flex flex-col bg-pop-black overflow-hidden font-sans relative transition-all duration-300 w-full h-full",
+        )}
+        style={{ filter: isEyeCareMode ? 'sepia(0.2) brightness(0.9) contrast(0.95)' : 'none' }}
       >
-        <div 
-          className={cn(
-            "flex flex-col bg-pop-black overflow-hidden font-sans relative transition-all duration-300",
-            isScriptMode
-              ? "w-full h-full"
-              : (isFullscreen ? "h-screen" : "w-full aspect-[16/9]")
-          )}
-          style={{ filter: isEyeCareMode ? 'sepia(0.2) brightness(0.9) contrast(0.95)' : 'none' }}
-        >
         
         {/* Global HUD — fold button is inside HUD left column */}
         <HUD
@@ -155,6 +142,7 @@ function AppContent() {
           onOpenDelete={() => setIsDeleteOpen(true)}
           onRegenerate={handleRegenerate}
           regenerating={regenerating}
+          isGenerating={isGenerating}
         />
 
         {/* Sidebar — slides in from left via translate-x */}
@@ -208,26 +196,11 @@ function AppContent() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 relative w-full min-h-0 overflow-hidden bg-white">
+        <main className="flex-1 relative w-full min-h-full overflow-hidden bg-white">
           {activeTab === 'story' && <StoryView />}
           {activeTab === 'dispatch' && <DispatchView />}
           {activeTab === 'archive' && <ArchiveView />}
         </main>
-
-        {/* 正在查看历史楼层提示条 */}
-        {isViewingHistory && activeTab === 'story' && (
-          <div className="shrink-0 bg-pop-yellow text-pop-black px-4 py-2 flex items-center justify-between font-bold text-sm">
-            <span>
-              正在查看历史楼层 #{viewingFloorId} &mdash; 新消息将发送到最新楼层
-            </span>
-            <button
-              onClick={goToLatest}
-              className="px-3 py-1 bg-pop-black text-white text-xs font-bold hover:bg-pop-pink transition-colors clip-diagonal"
-            >
-              返回最新
-            </button>
-          </div>
-        )}
 
         {/* 底部输入栏 — 可折叠 */}
         <AnimatePresence>
@@ -237,9 +210,9 @@ function AppContent() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="shrink-0"
+              className="fixed bottom-0 left-0 right-0 z-50"
             >
-              <ChatBar onClose={() => setIsChatOpen(false)} />
+              <ChatBar onClose={() => setIsChatOpen(false)} onGeneratingChange={setIsGenerating} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -252,7 +225,7 @@ function AppContent() {
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
               onClick={() => setIsChatOpen(true)}
-              className="fixed bottom-4 left-4 z-50 w-12 h-12 bg-pop-yellow text-pop-black rounded-full pop-border shadow-pop-pink flex items-center justify-center hover:scale-110 transition-transform active:scale-90"
+              className="fixed bottom-0 left-0 z-50 w-12 h-12 bg-pop-yellow text-pop-black rounded-full pop-border shadow-pop-pink flex items-center justify-center hover:scale-110 transition-transform active:scale-90"
               title="展开输入栏"
             >
               <MessageCircle className="w-6 h-6" />
@@ -266,7 +239,6 @@ function AppContent() {
         <ReadingModal isOpen={isReadingOpen} onClose={() => setIsReadingOpen(false)} />
         <DeleteFloorsModal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} />
 
-      </div>
       </div>
     </div>
   );

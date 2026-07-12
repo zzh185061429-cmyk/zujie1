@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PopCard } from "../components/ui/PopCard";
 import { PopButton } from "../components/ui/PopButton";
-import { History, ChevronRight, ChevronLeft } from "lucide-react";
+import { History, ChevronRight, ChevronLeft, Play, Pause, Zap, FastForward } from "lucide-react";
 import { useToast } from "../components/ToastProvider";
 import { useGameContext } from "../state/GameContext";
 import { parseScriptContent, ScriptLine } from "./scriptParser";
@@ -12,12 +12,27 @@ function displayName(name: string): string {
   return name === '<user>' ? '我' : name;
 }
 
+/** 打字机速度配置 */
+const SPEED_DELAY: Record<number, number> = {
+  1: 50,   // 普通
+  2: 20,   // 倍速
+  4: 5,    // 极速
+};
+
 export function StoryView() {
   const [script, setScript] = useState<ScriptLine[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showBacklog, setShowBacklog] = useState(false);
+  
+  // ── 打字机控制状态 ──
+  const [speedLevel, setSpeedLevel] = useState(1);        // 1=普通, 2=倍速, 4=极速
+  const [isAutoMode, setIsAutoMode] = useState(false);     // Auto 自动播放
+  
+  // 使用 ref 跟踪跳过状态，避免触发 effect 重新执行
+  const skipTypingRef = useRef(false);
+
   const { showToast } = useToast();
   const { viewingFloorId, lastAssistantFloorId } = useGameContext();
 
@@ -47,18 +62,29 @@ export function StoryView() {
   // 打字机效果
   useEffect(() => {
     let timeout: NodeJS.Timeout;
+    
+    // 重置跳过标记（新句子开始时）
+    skipTypingRef.current = false;
+    
     if (currentLine && currentIndex < script.length) {
       setIsTyping(true);
       setDisplayedText("");
 
       const fullText = currentLine.text;
       let i = 0;
+      const delay = SPEED_DELAY[speedLevel] || 50;
 
       const typeChar = () => {
+        // 检查是否被跳过
+        if (skipTypingRef.current) {
+          setDisplayedText(fullText);
+          setIsTyping(false);
+          return;
+        }
         if (i < fullText.length) {
           setDisplayedText(fullText.substring(0, i + 1));
           i++;
-          timeout = setTimeout(typeChar, 30);
+          timeout = setTimeout(typeChar, delay);
         } else {
           setIsTyping(false);
         }
@@ -67,11 +93,25 @@ export function StoryView() {
       typeChar();
     }
     return () => clearTimeout(timeout);
-  }, [currentIndex, currentLine, script.length]);
+  }, [currentIndex, currentLine, script.length, speedLevel]);
+
+  // Auto 模式：打字完成后自动播放下一句
+  useEffect(() => {
+    if (isAutoMode && !isTyping && currentIndex < script.length - 1) {
+      const waitTime = Math.min(3000, Math.max(1000, (currentLine?.text.length || 0) * 100));
+      const timer = setTimeout(() => {
+        setCurrentIndex(prev => prev + 1);
+      }, waitTime);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isAutoMode, isTyping, currentIndex, script.length, currentLine]);
 
   const handleNext = () => {
     if (!currentLine) return;
     if (isTyping) {
+      // 手动跳过当前打字：设置 ref 标记，让 typeChar 检测到后退出
+      skipTypingRef.current = true;
       setDisplayedText(currentLine.text);
       setIsTyping(false);
     } else {
@@ -147,12 +187,41 @@ export function StoryView() {
           </div>
 
           <div className="flex justify-between items-end mt-4 z-10">
-            <div className="flex gap-4">
+            <div className="flex gap-2 flex-wrap">
               <PopButton variant="ghost" size="sm" className="gap-2 bg-white/10 text-white hover:bg-white/20 pop-border border-white shadow-none" onClick={(e) => { e.stopPropagation(); setShowBacklog(true); }}>
                 <History className="w-4 h-4" /> 历史记录
               </PopButton>
               <PopButton variant="ghost" size="sm" className="gap-2 bg-white/10 text-white hover:bg-white/20 pop-border border-white shadow-none" onClick={handlePrev} disabled={currentIndex === 0}>
                 <ChevronLeft className="w-4 h-4" /> 上一句
+              </PopButton>
+              {/* Auto 模式切换 */}
+              <PopButton
+                variant="ghost"
+                size="sm"
+                className={`gap-2 pop-border border-white shadow-none ${isAutoMode ? 'bg-pop-pink text-white hover:bg-pop-pink/80' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                onClick={(e) => { e.stopPropagation(); setIsAutoMode(prev => !prev); }}
+                title={isAutoMode ? '关闭 Auto 模式' : '开启 Auto 模式'}
+              >
+                {isAutoMode ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                <span className="hidden sm:inline">{isAutoMode ? 'Auto 开' : 'Auto'}</span>
+              </PopButton>
+              {/* 倍速切换 */}
+              <PopButton
+                variant="ghost"
+                size="sm"
+                className="gap-2 bg-white/10 text-white hover:bg-white/20 pop-border border-white shadow-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSpeedLevel(prev => {
+                    if (prev === 1) return 2;
+                    if (prev === 2) return 4;
+                    return 1;
+                  });
+                }}
+                title={`当前速度: ${speedLevel === 1 ? '普通' : speedLevel === 2 ? '倍速' : '极速'}`}
+              >
+                {speedLevel === 4 ? <Zap className="w-4 h-4 text-pop-yellow" /> : <FastForward className="w-4 h-4" />}
+                <span className="hidden sm:inline">{speedLevel === 1 ? '普通' : speedLevel === 2 ? '倍速' : '极速'}</span>
               </PopButton>
             </div>
             {!isTyping && (

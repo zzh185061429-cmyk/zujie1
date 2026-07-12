@@ -12,12 +12,17 @@ import { useToast } from '../components/ToastProvider';
  *   2. triggerSlash('/trigger await=true')  → 触发 AI 生成并等待
  * - 生成期间显示加载态，完成后清空输入
  */
-export function ChatBar({ onClose }: { onClose: () => void }) {
-  const { pendingMessage, setPendingMessage } = useGameContext();
+export function ChatBar({ onClose, onGeneratingChange }: { onClose: () => void; onGeneratingChange?: (generating: boolean) => void }) {
+  const { pendingMessage, setPendingMessage, startGenerating, finishGenerating } = useGameContext();
   const { showToast } = useToast();
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 通知父组件生成状态变化
+  useEffect(() => {
+    onGeneratingChange?.(isSending);
+  }, [isSending, onGeneratingChange]);
 
   // pendingMessage 有值 → 自动填入并聚焦
   useEffect(() => {
@@ -37,6 +42,9 @@ export function ChatBar({ onClose }: { onClose: () => void }) {
     setText('');
     setPendingMessage('');
 
+    // 通知 GameContext 开始生成，锁定当前画面
+    startGenerating();
+
     try {
       // 第 1 步：创建 user 楼层（不触发生成）
       await triggerSlash('/send ' + trimmed);
@@ -52,8 +60,10 @@ export function ChatBar({ onClose }: { onClose: () => void }) {
       setText(trimmed);
     } finally {
       setIsSending(false);
+      // 通知 GameContext 生成结束
+      finishGenerating();
     }
-  }, [text, isSending, setPendingMessage, showToast]);
+  }, [text, isSending, setPendingMessage, showToast, startGenerating, finishGenerating]);
 
   const handleClear = useCallback(() => {
     setText('');
@@ -80,7 +90,7 @@ export function ChatBar({ onClose }: { onClose: () => void }) {
         <ChevronDown className="w-5 h-5" />
       </button>
 
-      <div className="flex items-end gap-3 max-w-5xl mx-auto">
+      <div className="flex items-end gap-3 w-full px-2">
         {/* Textarea */}
         <div className="flex-1 relative">
           <textarea
@@ -116,11 +126,11 @@ export function ChatBar({ onClose }: { onClose: () => void }) {
         <button
           onClick={handleSend}
           disabled={!text.trim() || isSending}
-          className="shrink-0 px-6 py-3 bg-pop-yellow text-pop-black font-black italic text-lg
+          className="shrink-0 px-4 py-2 sm:px-6 sm:py-3 bg-pop-yellow text-pop-black font-black italic text-base sm:text-lg
                      border-4 border-white shadow-pop-pink
                      hover:scale-105 active:scale-95 transition-all
                      disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
-                     clip-diagonal flex items-center gap-2 min-w-[80px] justify-center"
+                     clip-diagonal flex items-center gap-2 min-w-[60px] sm:min-w-[80px] justify-center"
         >
           {isSending ? (
             <Loader className="w-5 h-5 animate-spin" />

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useGameContext } from "../state/GameContext";
 import { CalendarModal } from "./modals/CalendarModal";
 import { MapModal } from "./modals/MapModal";
+import { cn } from "../utils";
 import { FloorSelector } from "./FloorSelector";
 
 interface HUDProps {
@@ -18,9 +19,10 @@ interface HUDProps {
   onOpenDelete: () => void;
   onRegenerate: () => void;
   regenerating: boolean;
+  isGenerating?: boolean;
 }
 
-export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFullscreen, onOpenThinking, onOpenVariables, onOpenReading, onOpenDelete, onRegenerate, regenerating }: HUDProps) {
+export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFullscreen, onOpenThinking, onOpenVariables, onOpenReading, onOpenDelete, onRegenerate, regenerating, isGenerating = false }: HUDProps) {
   const { currentOrder, setIsCalendarOpen, setIsMapOpen, totalDebt, totalIncome, remainingDebt, isEyeCareMode, setIsEyeCareMode, gameTime, currentWeekday, currentLocation } = useGameContext();
   
   const progress = totalDebt > 0 ? Math.min(100, Math.max(0, (totalIncome / totalDebt) * 100)) : 0;
@@ -28,7 +30,8 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-40 p-2 pointer-events-none">
-        <div className="flex flex-row items-stretch gap-2 max-w-7xl mx-auto">
+        {/* 宽屏：三列左右布局；窄屏：上下堆叠 */}
+        <div className="flex flex-col lg:flex-row items-stretch gap-2 w-full">
           
           {/* Left column: 时间 / 地点 / 折叠按钮 */}
           <div className="flex flex-col gap-2 shrink-0 pointer-events-auto">
@@ -129,6 +132,23 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
 
           {/* Right column: 当前角色 / 任务 */}
           <div className="flex flex-col gap-2 shrink-0 pointer-events-auto min-w-[160px]">
+            {/* 状态灯 */}
+            <PopCard
+              className={cn(
+                "py-1 px-3 flex items-center justify-center gap-2 clip-diagonal border-2 border-white shadow-[2px_2px_0_#1a1a1a] transition-colors duration-300",
+                isGenerating ? "bg-red-500 text-white" : "bg-green-500 text-white"
+              )}
+              title={isGenerating ? "AI 生成中..." : "AI 空闲"}
+            >
+              <div className={cn(
+                "w-3 h-3 rounded-full animate-pulse",
+                isGenerating ? "bg-white" : "bg-white"
+              )} />
+              <span className="font-bold text-sm whitespace-nowrap">
+                {isGenerating ? "生成中" : "就绪"}
+              </span>
+            </PopCard>
+
             <AnimatePresence mode="wait">
               {!currentOrder ? (
                 <motion.div
