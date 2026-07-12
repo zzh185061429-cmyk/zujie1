@@ -26,8 +26,10 @@ function calcScale(): number {
   const designH = 720;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const scale = Math.min(1, vw / designW, vh / designH);
-  return Math.max(0.5, scale);
+  // 先填满屏幕，再整体缩放
+  const scale = Math.min(vw / designW, vh / designH);
+  // PC 端（屏幕足够大）不缩放，保持 1
+  return scale >= 1 ? 1 : scale;
 }
 
 type Tab = 'story' | 'dispatch' | 'archive';
@@ -125,15 +127,8 @@ function AppContent() {
       className="w-full h-full flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: '#1a1a1a' }}
     >
-      {/* 整体缩放容器：手机端等比例缩小填满全屏，PC 端保持原尺寸，全屏时直接 100% 填满 */}
       <div 
-        className="relative overflow-visible"
-        style={{ 
-          width: isFullscreen ? '100%' : (isMobile ? `${1280}px` : '100%'), 
-          height: isFullscreen ? '100%' : (isMobile ? `${720}px` : '100%'),
-          transform: isFullscreen ? 'none' : (isMobile ? `scale(${scale})` : 'none'),
-          transformOrigin: 'center center',
-        }}
+        className="relative w-full h-full"
       >
         <div 
           className={cn(

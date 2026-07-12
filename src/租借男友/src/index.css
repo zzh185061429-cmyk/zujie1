@@ -83,3 +83,17 @@ body {
   color: var(--color-pop-black);
   overflow-x: hidden;
 }
+
+/* 手机端整体缩放：PC 布局等比例缩小填满屏幕 */
+@media (max-width: 1279px) {
+  body {
+    zoom: calc(100vw / 1280);
+  }
+}
+
+/* 横屏手机也缩放 */
+@media (max-height: 719px) and (orientation: landscape) {
+  body {
+    zoom: calc(100vh / 720);
+  }
+}
