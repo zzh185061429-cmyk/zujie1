@@ -1,119 +1,119 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PopCard } from "../components/ui/PopCard";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Star, Heart, AlertCircle, Quote } from "lucide-react";
+import { X, Star, Heart, AlertCircle, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 const CHARACTERS = [
-  { 
-    id: "1", 
-    name: "沈千金", 
-    role: "经纪人 / 妹妹", 
+  {
+    id: "1",
+    name: "沈千金",
+    role: "经纪人 / 妹妹",
     price: "经纪人",
     color: "bg-pop-yellow",
     avatar: "https://i.postimg.cc/qMd7QGKF/1000213232.png",
-    desc: "你的妹妹，燕大金融大一新生。因家族破产负债，两人需共同还债。她擅长社交、金融和艺术鉴赏，性格聪明、骄傲，爱吐槽。", 
+    desc: "你的妹妹，燕大金融大一新生。因家族破产负债，两人需共同还债。她擅长社交、金融和艺术鉴赏，性格聪明、骄傲，爱吐槽。",
     tags: ["妹妹", "经纪人", "吐槽", "骄傲"],
     likes: "内增高、高定礼服、商战案例",
     dislikes: "被人可怜、出汗、被打乱计划",
     secret: [
       "其实最喜欢的小饰品是你十二岁时做的小发卡。",
-      "其实是并夕夕的资深用户，收纳工具、手机壳等全来源于‘甄选好物’。",
-      "浏览器里有很多‘怎么快速攒一千万’的搜索记录，拒绝肉体交易并曾将骚扰者送进警局拘留十五天。",
-      "其实有一个叫‘胖达’的布偶，一个人时会自己配音和它聊天。",
+      "其实是并夕夕的资深用户，收纳工具、手机壳等全来源于'甄选好物'。",
+      "浏览器里有很多'怎么快速攒一千万'的搜索记录，拒绝肉体交易并曾将骚扰者送进警局拘留十五天。",
+      "其实有一个叫'胖达'的布偶，一个人时会自己配音和它聊天。",
       "手机备忘录里有三类名单：加倍补偿的、还完钱就行的、还完钱立马搞垮的。"
     ],
     sisterNote: "我是你妹妹兼经纪人！不准给我接奇怪的单子，赶紧给我把债还完！"
   },
-  { 
-    id: "2", 
-    name: "姜朝渔", 
-    role: "姜氏财团董事长", 
+  {
+    id: "2",
+    name: "姜朝渔",
+    role: "姜氏财团董事长",
     price: "¥500,000/天",
-    color: "bg-pop-cyan", 
+    color: "bg-pop-cyan",
     avatar: "https://i.postimg.cc/k5trk03S/1000213361.png",
-    desc: "姜氏财团董事长，裴今歌的挚友。行事果断，实则是一位充满母性光辉的猫系大姐姐，看似高不可攀实则渴望亲密关系。", 
+    desc: "姜氏财团董事长，裴今歌的挚友。行事果断，实则是一位充满母性光辉的猫系大姐姐，看似高不可攀实则渴望亲密关系。",
     tags: ["成熟", "母性", "猫系大姐姐"],
     likes: "大型犬、击剑、看烂片、被坐热的椅子",
     dislikes: "深夜电话、虚伪的精致礼盒",
     secret: [
       "其实更喜欢跪坐在地上，头靠在亲密的人腿上，尤其是被人挠下巴的时候会不自觉发出呼噜声。",
-      "其实‘股东’是一个叔伯遗弃的，她想着狗又没什么错，就带回了家里养着。",
+      "其实'股东'是一个叔伯遗弃的，她想着狗又没什么错，就带回了家里养着。",
       "其实经常幻想如果妈妈还活着，以及如果自己当了妈妈会怎么样。",
       "其实睡姿很不雅，醒来的被子从来没有盖好过。"
     ],
     sisterNote: "这位可是大金主！虽然从小看着我们长大，但现在是还债的关键时期，一定要好好表现！"
   },
-  { 
-    id: "3", 
-    name: "裴今歌", 
-    role: "一线女演员", 
+  {
+    id: "3",
+    name: "裴今歌",
+    role: "一线女演员",
     price: "¥500,000/天",
-    color: "bg-pop-pink", 
+    color: "bg-pop-pink",
     avatar: "https://i.postimg.cc/yNSqwM4h/1000213352.png",
-    desc: "自由散漫的当红女演员，你的青梅竹马。充满孩童般的天真与好奇，有走失七年的经历。", 
+    desc: "自由散漫的当红女演员，你的青梅竹马。充满孩童般的天真与好奇，有走失七年的经历。",
     tags: ["青梅竹马", "当红演员", "好奇宝宝"],
     likes: "高处、起外号、片场的折叠椅、被人摸头",
     dislikes: "片场的监视器、塑料袋味",
     secret: [
-      "其实有一本名为“今日心情”的日记本，里边没有文字，全是不同姿态的火柴人。",
+      "其实有一本名为'今日心情'的日记本，里边没有文字，全是不同姿态的火柴人。",
       "其实，父母每周都会要求报备出行和位置，防止再度突发奇想离家出走。",
-      "其实每次新剧组开拍前都会去姜朝渔家里一趟，据说是为了“撸大猫”放松心情。",
-      "其实会在一个人在家的时候，抱着那只叫“姜董”的猫对戏。"
+      "其实每次新剧组开拍前都会去姜朝渔家里一趟，据说是为了'撸大猫'放松心情。",
+      "其实会在一个人在家的时候，抱着那只叫'姜董'的猫对戏。"
     ],
     sisterNote: "今歌姐可是自家人，不过她出价也是顶级的，千万别因为熟就懈怠了！"
   },
-  { 
-    id: "4", 
-    name: "周念安", 
-    role: "法学院学霸 / 前女友", 
+  {
+    id: "4",
+    name: "周念安",
+    role: "法学院学霸 / 前女友",
     price: "¥2,000/天",
-    color: "bg-pop-yellow", 
+    color: "bg-pop-yellow",
     avatar: "https://i.postimg.cc/bN8z1wX5/1000213237.png",
-    desc: "燕大法学院大三学生，你的前女友。外表冷漠，因为自卑曾主动提分手，实则拼命攒钱只为包养你。", 
+    desc: "燕大法学院大三学生，你的前女友。外表冷漠，因为自卑曾主动提分手，实则拼命攒钱只为包养你。",
     tags: ["前女友", "学霸", "自卑又自尊"],
     likes: "物美价廉的小玩意儿、自己做菜、下雨天",
     dislikes: "游乐园的卡通发箍、欠条、别人请客",
     secret: [
       "其实吃不了一点辣，但是不会告诉任何人。",
-      "打工地点是城东的“回头草咖啡”，对老板娘的起名水平和回头草这个词带有微妙的怨念。",
+      "打工地点是城东的'回头草咖啡'，对老板娘的起名水平和回头草这个词带有微妙的怨念。",
       "其实有阅读癖，连洗发水包装上的配方表也会偷偷记下来。",
       "其实只有在涉及法律专业知识的时候才会引用那些条文，对搭讪者会甩看垃圾的眼神。",
       "其实每次的工资都会打给妈妈大头并虚报金额，不想让妈妈知道自己很累。",
-      "其实有一个单独的账户每周存钱，用来攒“包养”你的嫁妆。",
+      "其实有一个单独的账户每周存钱，用来攒'包养'你的嫁妆。",
       "其实酒量不行，喝醉后会晕乎乎地撒娇要抱抱，但除了你没人见过。"
     ],
     sisterNote: "她居然也来下单了...虽然以前是嫂子，但现在是客户，公私分明懂不懂？"
   },
-  { 
-    id: "5", 
-    name: "季明舒", 
-    role: "地产千金 / 霸总脑", 
+  {
+    id: "5",
+    name: "季明舒",
+    role: "地产千金 / 霸总脑",
     price: "¥500,000/天",
-    color: "bg-pop-black", 
-    textColor: "text-white", 
+    color: "bg-pop-black",
+    textColor: "text-white",
     avatar: "https://i.postimg.cc/kgpwtzwq/nai-3587295711.png",
-    desc: "季氏地产的掌上明珠，深受霸总文学毒害，喜欢对你使用土味情话和霸总语录。", 
+    desc: "季氏地产的掌上明珠，深受霸总文学毒害，喜欢对你使用土味情话和霸总语录。",
     tags: ["自信直率", "霸总脑", "浪漫主义"],
     likes: "给自己配旁白、言情小说、被人注视",
     dislikes: "文艺片、掉头发、恐怖片",
     secret: [
       "其实对你用的每一句台词都是前一晚熬夜到两三点钟才想好的，为此掉了很多头发。",
-      "其实连载的小说有被人批评过不切实际，她的回复是“虚构作品甜一点也没什么不好”。",
+      "其实连载的小说有被人批评过不切实际，她的回复是'虚构作品甜一点也没什么不好'。",
       "其实除了那些言情小说，她的房间布置很乱，每天都需要保姆重新整理。",
-      "因为狗毛过敏养了一只会模仿她说话的鹦鹉，起名“季明舒的鹦武者”。",
+      "因为狗毛过敏养了一只会模仿她说话的鹦鹉，起名'季明舒的鹦武者'。",
       "其实每周六都会风雨无阻地去福利院做一整天的公益志愿者。"
     ],
-    sisterNote: "这位大小姐脑回路有点特别，你只要配合她演好‘娇妻’...啊不，男主角就行了！"
+    sisterNote: "这位大小姐脑回路有点特别，你只要配合她演好'娇妻'...啊不，男主角就行了！"
   },
-  { 
-    id: "6", 
-    name: "傅霁", 
-    role: "R18画师 / 白化病少女", 
+  {
+    id: "6",
+    name: "傅霁",
+    role: "R18画师 / 白化病少女",
     price: "¥8,000/天",
-    color: "bg-white", 
-    textColor: "text-pop-black", 
+    color: "bg-white",
+    textColor: "text-pop-black",
     avatar: "https://i.postimg.cc/zfRm9sZ7/1000213236.png",
-    desc: "患有白化病的数媒大一学生，知名R18画师“白兔先生”。为了突破创作瓶颈而雇佣你作为模特。", 
+    desc: "患有白化病的数媒大一学生，知名R18画师'白兔先生'。为了突破创作瓶颈而雇佣你作为模特。",
     tags: ["三无", "画师", "白发红瞳"],
     likes: "被人说好话、毛毯、颜文字",
     dislikes: "人多的场合、拽专业名词的人、阳光直射",
@@ -125,14 +125,14 @@ const CHARACTERS = [
     ],
     sisterNote: "去她家当模特？老哥你可悠着点，别被画进什么奇怪的本子里了。"
   },
-  { 
-    id: "7", 
-    name: "椎名律", 
-    role: "小提琴天才", 
+  {
+    id: "7",
+    name: "椎名律",
+    role: "小提琴天才",
     price: "¥3,000/天",
-    color: "bg-pop-pink", 
+    color: "bg-pop-pink",
     avatar: "https://i.postimg.cc/0Np69H75/nai-4055558051.png",
-    desc: "日本小提琴天才，性格张扬叛逆，喜欢恶作剧。因为觉得有趣而下载了APP看你的笑话。", 
+    desc: "日本小提琴天才，性格张扬叛逆，喜欢恶作剧。因为觉得有趣而下载了APP看你的笑话。",
     tags: ["天才", "叛逆", "恶作剧"],
     likes: "恶作剧、麻辣烫、夜晚便利店",
     dislikes: "正经场合、被说可惜、密码日记本",
@@ -156,7 +156,7 @@ const CHARACTERS = [
     likes: "凌晨的路灯、给别人泡茶、旧电影的吻戏、水袖扇舞",
     dislikes: "被当成仙女、刺眼的光、吵架",
     secret: [
-      "其实手机里有一个叫做“宋词选读”的便签文件夹，里边全是自己私下看的东西。",
+      "其实手机里有一个叫做'宋词选读'的便签文件夹，里边全是自己私下看的东西。",
       "其实比起视觉更喜欢文字，因为可以发挥想象力，更有代入感。",
       "其实给你发大胆消息前，做了很长时间的思想建设和反复删改。",
       "其实最喜欢的那把木簪是小时候用小刀雕出来的，划伤手时罕见地大哭过。",
@@ -173,7 +173,7 @@ const CHARACTERS = [
     color: "bg-white",
     textColor: "text-pop-black",
     avatar: "https://i.postimg.cc/HnZVHWtB/1000213897.png",
-    desc: "法国交换生，你的小学同学，霍千黎的名义未婚夫。被人称为“布列塔尼的守门人”。",
+    desc: "法国交换生，你的小学同学，霍千黎的名义未婚夫。被人称为'布列塔尼的守门人'。",
     tags: ["骑士", "交换生", "大剑"],
     likes: "高热量食物、《堂吉诃德》、煎饼摊",
     dislikes: "浓烈的香水味、被人从背后拍肩膀、阴雨天",
@@ -234,38 +234,27 @@ const CHARACTERS = [
 export function ArchiveView() {
   const [selectedChar, setSelectedChar] = useState<typeof CHARACTERS[0] | null>(null);
   const [isSecretOpen, setIsSecretOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const [dragConstraints, setDragConstraints] = useState({ right: 0, left: 0 });
 
-  useEffect(() => {
-    // 设置拖拽的边界
-    if (carouselRef.current) {
-      setDragConstraints({
-        right: 0,
-        left: -carouselRef.current.scrollWidth + carouselRef.current.offsetWidth,
-      });
-    }
-    // 监听窗口调整大小以更新拖拽边界
-    const handleResize = () => {
-      if (carouselRef.current) {
-        setDragConstraints({
-          right: 0,
-          left: -carouselRef.current.scrollWidth + carouselRef.current.offsetWidth,
-        });
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const goToPrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? CHARACTERS.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === CHARACTERS.length - 1 ? 0 : prev + 1));
+  };
+
+  const currentChar = CHARACTERS[currentIndex];
 
   return (
     <div className="w-full h-full bg-stripes pt-0 p-4 md:p-8 flex flex-col relative overflow-hidden">
-      
-      {/* Swipeable / Draggable Container */}
-      <div ref={carouselRef} className="flex-1 overflow-hidden z-10 px-2 md:px-4 cursor-grab active:cursor-grabbing pb-24 md:pb-0">
+
+      {/* 大屏：drag 轮播 */}
+      <div ref={carouselRef} className="hidden md:flex flex-1 overflow-hidden z-10 px-2 md:px-4 cursor-grab active:cursor-grabbing pb-24 md:pb-0">
         <motion.div
           drag="x"
-          dragConstraints={dragConstraints}
+          dragConstraints={{ right: 0, left: -((CHARACTERS.length * 288) - (carouselRef.current?.offsetWidth || 800)) }}
           dragElastic={0.2}
           className="flex gap-8 h-full items-center w-max"
         >
@@ -277,13 +266,10 @@ export function ArchiveView() {
               onClick={() => { setSelectedChar(char); setIsSecretOpen(false); }}
               className="shrink-0 relative h-[320px] md:h-[420px] min-h-[280px] cursor-pointer"
             >
-              <div 
+              <div
                 className={`w-[220px] md:w-[260px] lg:w-[280px] h-full pop-border shadow-pop-lg relative overflow-hidden flex flex-col clip-diagonal ${char.color}`}
               >
-                {/* Halftone BG overlay */}
                 <div className="absolute inset-0 bg-halftone opacity-30 mix-blend-overlay pointer-events-none z-0"></div>
-                
-                {/* Visual Graphic Placeholder */}
                 <div className="flex-1 bg-white/20 m-4 pop-border relative overflow-hidden pointer-events-none z-10">
                    {char.avatar ? (
                      <img src={char.avatar} alt={char.name} className="absolute inset-0 w-full h-full object-cover object-top" />
@@ -293,7 +279,6 @@ export function ArchiveView() {
                      </div>
                    )}
                 </div>
-
                 <div className={`p-4 md:p-6 pt-0 pointer-events-none z-10 relative ${char.textColor || 'text-pop-black'}`}>
                   <h2 className="text-3xl md:text-4xl font-black italic -skew-x-6 drop-shadow-md">{char.name}</h2>
                   <div className="inline-block px-3 py-1 bg-pop-black text-white text-sm font-bold mt-2 pop-border italic">
@@ -301,12 +286,8 @@ export function ArchiveView() {
                   </div>
                 </div>
               </div>
-
-              {/* Detail Indicator */}
               <div className="absolute -bottom-4 right-4 z-20">
-                <div 
-                  className="bg-pop-yellow text-pop-black px-4 py-2 font-black pop-border shadow-[4px_4px_0_#1a1a1a] clip-diagonal"
-                >
+                <div className="bg-pop-yellow text-pop-black px-4 py-2 font-black pop-border shadow-pop clip-diagonal">
                   VIEW
                 </div>
               </div>
@@ -315,26 +296,80 @@ export function ArchiveView() {
         </motion.div>
       </div>
 
+      {/* 竖屏：按钮翻页 */}
+      <div className="flex md:hidden flex-1 flex-col items-center justify-center z-10 px-4 pb-20">
+        <div className="flex items-center gap-4 w-full max-w-sm">
+          <button
+            onClick={goToPrev}
+            className="shrink-0 p-3 bg-pop-black text-white pop-border shadow-pop hover:bg-pop-pink transition-colors clip-diagonal"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <div className="flex-1 relative">
+            <div
+              className={`w-full aspect-3/4 pop-border shadow-pop-lg relative overflow-hidden flex flex-col clip-diagonal ${currentChar.color}`}
+            >
+              <div className="absolute inset-0 bg-halftone opacity-30 mix-blend-overlay pointer-events-none z-0"></div>
+              <div className="flex-1 bg-white/20 m-3 pop-border relative overflow-hidden pointer-events-none z-10">
+                {currentChar.avatar ? (
+                  <img src={currentChar.avatar} alt={currentChar.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center font-black text-4xl opacity-50 mix-blend-overlay -skew-x-6 text-center leading-tight tracking-widest">
+                    {currentChar.name.split('').map((n, i) => <div key={i}>{n}</div>)}
+                  </div>
+                )}
+              </div>
+              <div className={`p-4 pt-0 pointer-events-none z-10 relative ${currentChar.textColor || 'text-pop-black'}`}>
+                <h2 className="text-2xl font-black italic -skew-x-6 drop-shadow-md">{currentChar.name}</h2>
+                <div className="inline-block px-2 py-0.5 bg-pop-black text-white text-xs font-bold mt-1 pop-border italic">
+                  {currentChar.price}
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-3 right-3 z-20">
+              <div className="bg-pop-yellow text-pop-black px-3 py-1.5 font-black text-sm pop-border shadow-pop clip-diagonal">
+                {currentIndex + 1} / {CHARACTERS.length}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={goToNext}
+            className="shrink-0 p-3 bg-pop-black text-white pop-border shadow-pop hover:bg-pop-pink transition-colors clip-diagonal"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </div>
+
+        <button
+          onClick={() => { setSelectedChar(currentChar); setIsSecretOpen(false); }}
+          className="mt-6 px-6 py-2 bg-pop-yellow text-pop-black font-black text-lg pop-border shadow-pop hover:scale-105 transition-transform clip-diagonal"
+        >
+          查看详细档案
+        </button>
+      </div>
+
       {/* Detail Modal */}
       <AnimatePresence>
         {selectedChar && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-4">
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-pop-black/80 backdrop-blur-sm"
               onClick={() => { setSelectedChar(null); setIsSecretOpen(false); }}
             />
-            
+
             <motion.div
               initial={{ scale: 0.8, y: 100, rotate: -5 }}
               animate={{ scale: 1, y: 0, rotate: 0 }}
               exit={{ scale: 0.8, y: 100, rotate: 5 }}
               transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
-              className="relative w-full max-w-4xl bg-white pop-border shadow-pop-lg z-10 flex flex-row overflow-hidden clip-diagonal max-h-[90vh] my-4"
+              className="relative w-full max-w-4xl bg-white pop-border shadow-pop-lg z-10 flex flex-col md:flex-row overflow-hidden clip-diagonal max-h-[90vh] md:max-h-[90vh] my-4 md:my-4"
             >
-              <button 
+              <button
                 onClick={() => { setSelectedChar(null); setIsSecretOpen(false); }}
                 className="absolute top-4 right-4 z-20 bg-pop-pink text-white p-2 pop-border hover:scale-110 active:scale-90 transition-transform shadow-[2px_2px_0_#1a1a1a]"
               >
@@ -342,25 +377,25 @@ export function ArchiveView() {
               </button>
 
               {/* Left: Graphic */}
-              <div className={`w-2/5 p-4 flex flex-col justify-center items-center relative shrink-0 ${selectedChar.color}`}>
+              <div className={`w-full md:w-2/5 p-4 flex flex-col justify-center items-center relative shrink-0 ${selectedChar.color}`}>
                 <div className="absolute inset-0 bg-halftone opacity-30"></div>
                 {selectedChar.avatar ? (
-                  <div className="z-10 w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-white overflow-hidden shadow-pop-lg transform -skew-x-6">
+                  <div className="z-10 w-24 h-24 md:w-48 md:h-48 rounded-full border-4 border-white overflow-hidden shadow-pop-lg transform -skew-x-6">
                     <img src={selectedChar.avatar} alt={selectedChar.name} className="w-full h-full object-cover object-top scale-110" />
                   </div>
                 ) : (
-                  <h2 className={`text-6xl font-black italic -skew-x-12 z-10 text-center drop-shadow-md ${selectedChar.textColor || 'text-pop-black'}`}>
+                  <h2 className={`text-4xl md:text-6xl font-black italic -skew-x-12 z-10 text-center drop-shadow-md ${selectedChar.textColor || 'text-pop-black'}`}>
                     {selectedChar.name}
                   </h2>
                 )}
-                <div className="mt-6 px-6 py-2 bg-pop-black text-white font-black text-xl pop-border z-10 transform -rotate-3 uppercase tracking-wider shadow-[4px_4px_0_#ffcc00] antialiased">
+                <div className="mt-4 md:mt-6 px-4 md:px-6 py-1.5 md:py-2 bg-pop-black text-white font-black text-lg md:text-xl pop-border z-10 transform -rotate-3 uppercase tracking-wider shadow-[4px_4px_0_#ffcc00] antialiased">
                   {selectedChar.role}
                 </div>
               </div>
 
               {/* Right: Info */}
-              <div className="w-3/5 p-4 bg-halftone flex flex-col gap-4 overflow-y-auto">
-                
+              <div className="w-full md:w-3/5 p-4 bg-halftone flex flex-col gap-3 md:gap-4 overflow-y-auto">
+
                 <div className="flex flex-wrap gap-2">
                   {selectedChar.tags.map(tag => (
                     <span key={tag} className="px-3 py-1 bg-white text-pop-black text-sm font-bold pop-border -skew-x-6 shadow-[2px_2px_0_#1a1a1a]">
@@ -370,19 +405,19 @@ export function ArchiveView() {
                 </div>
 
                 <PopCard className="bg-white">
-                  <h3 className="text-xl font-black mb-2 flex items-center gap-2"><Star className="fill-pop-yellow text-pop-yellow"/> 个人情报</h3>
-                  <p className="font-bold text-gray-700 leading-relaxed">{selectedChar.desc}</p>
+                  <h3 className="text-lg md:text-xl font-black mb-2 flex items-center gap-2"><Star className="fill-pop-yellow text-pop-yellow"/> 个人情报</h3>
+                  <p className="font-bold text-gray-700 leading-relaxed text-sm md:text-base">{selectedChar.desc}</p>
                 </PopCard>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <PopCard variant="pink" className="p-4 shadow-pop">
-                    <h3 className="text-md font-black text-white mb-2 flex items-center gap-2 border-b-2 border-white pb-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  <PopCard variant="pink" className="p-3 md:p-4 shadow-pop">
+                    <h3 className="text-sm md:text-md font-black text-white mb-2 flex items-center gap-2 border-b-2 border-white pb-1">
                       <Heart className="w-4 h-4 fill-white" /> 喜欢 (Likes)
                     </h3>
                     <p className="font-bold text-sm leading-relaxed">{selectedChar.likes}</p>
                   </PopCard>
-                  <PopCard variant="cyan" className="p-4 shadow-pop">
-                    <h3 className="text-md font-black text-pop-black mb-2 flex items-center gap-2 border-b-2 border-pop-black/30 pb-1">
+                  <PopCard variant="cyan" className="p-3 md:p-4 shadow-pop">
+                    <h3 className="text-sm md:text-md font-black text-pop-black mb-2 flex items-center gap-2 border-b-2 border-pop-black/30 pb-1">
                       <X className="w-4 h-4 stroke-[4px]" /> 讨厌 (Dislikes)
                     </h3>
                     <p className="font-bold text-sm leading-relaxed">{selectedChar.dislikes}</p>
@@ -390,21 +425,21 @@ export function ArchiveView() {
                 </div>
 
                 <PopCard className="bg-pop-black text-white shadow-pop-pink border-pop-pink relative">
-                  <div className="absolute top-2 right-2 opacity-20 pointer-events-none"><AlertCircle className="w-16 h-16 text-pop-pink" /></div>
+                  <div className="absolute top-2 right-2 opacity-20 pointer-events-none"><AlertCircle className="w-12 h-12 md:w-16 md:h-16 text-pop-pink" /></div>
                   <div className="relative z-10 cursor-pointer" onClick={() => setIsSecretOpen(!isSecretOpen)}>
-                    <div className="text-lg font-black text-pop-pink outline-none select-none flex items-center justify-between">
+                    <div className="text-base md:text-lg font-black text-pop-pink outline-none select-none flex items-center justify-between">
                       CLASSIFIED SECRET / 小秘密
                       <span className={`text-pop-pink transition-transform ${isSecretOpen ? 'rotate-180' : ''}`}>▼</span>
                     </div>
                   </div>
                   <AnimatePresence>
                     {isSecretOpen && (
-                      <motion.ul 
+                      <motion.ul
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.15, ease: "linear" }}
-                        className="font-bold text-white antialiased list-disc pl-5 space-y-2 relative z-10 overflow-hidden mt-4"
+                        className="font-bold text-white antialiased list-disc pl-5 space-y-2 relative z-10 overflow-hidden mt-4 text-sm md:text-base"
                       >
                         {selectedChar.secret.map((s, i) => <li key={i}>{s}</li>)}
                       </motion.ul>
@@ -412,9 +447,9 @@ export function ArchiveView() {
                   </AnimatePresence>
                 </PopCard>
 
-                <PopCard variant="yellow" className="bg-pop-yellow shadow-[4px_4px_0_#ff3366] border-4 border-pop-pink">
-                  <h3 className="text-lg font-black flex items-center gap-2 mb-2"><AlertCircle className="w-5 h-5"/> 经纪人(妹妹)的备忘录</h3>
-                  <p className="font-bold text-pop-black italic bg-white/50 p-2 border-l-4 border-pop-pink">
+                <PopCard variant="yellow" className="bg-pop-yellow shadow-pop-pink border-4 border-pop-pink">
+                  <h3 className="text-base md:text-lg font-black flex items-center gap-2 mb-2"><AlertCircle className="w-5 h-5"/> 经纪人(妹妹)的备忘录</h3>
+                  <p className="font-bold text-pop-black italic bg-white/50 p-2 border-l-4 border-pop-pink text-sm md:text-base">
                     {selectedChar.sisterNote}
                   </p>
                 </PopCard>

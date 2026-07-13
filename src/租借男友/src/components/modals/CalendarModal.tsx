@@ -59,7 +59,7 @@ export function CalendarModal() {
   const displayedEvents = selectedDay ? monthEvents.filter(e => e.day === selectedDay) : monthEvents;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 p-4">
+    <div className="fixed inset-0 z-100 flex items-start md:items-center justify-center pt-0 md:pt-0 p-0 md:p-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -72,7 +72,7 @@ export function CalendarModal() {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.8, y: 50 }}
         transition={{ type: "spring", bounce: 0.5 }}
-        className="relative w-full max-w-lg bg-white pop-border shadow-[8px_8px_0_#00e5ff] z-10 flex flex-col overflow-hidden clip-diagonal max-h-[calc(100vh-6rem)]"
+        className="relative w-full h-full md:w-auto md:max-w-lg bg-white pop-border shadow-[8px_8px_0_#00e5ff] z-10 flex flex-col overflow-hidden clip-diagonal md:max-h-[calc(100vh-6rem)]"
       >
         <div className="bg-pop-cyan text-pop-black p-4 flex justify-between items-center border-b-4 border-pop-black shrink-0">
           <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export function CalendarModal() {
           </button>
         </div>
         <div className="p-6 bg-stripes relative overflow-y-auto hide-scrollbar flex-1">
-          <div className="bg-white border-4 border-pop-black p-4 shadow-[4px_4px_0_#1a1a1a] clip-diagonal relative z-10">
+          <div className="bg-white border-4 border-pop-black p-4 shadow-pop clip-diagonal relative z-10">
             
             {/* Header / Nav */}
             <div className="flex justify-between items-center mb-6 bg-pop-black text-white p-2 clip-diagonal">

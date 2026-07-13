@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { PopCard } from "./ui/PopCard";
-import { Clock, MapPin, User, Briefcase, Eye, EyeOff, Menu, X, Maximize2, Minimize2, Brain, Database, BookText, Trash2, RefreshCw } from "lucide-react";
+import { Clock, MapPin, User, Briefcase, Eye, EyeOff, Menu, X, Maximize2, Minimize2, Brain, Database, BookText, Trash2, RefreshCw, MoreHorizontal, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useGameContext } from "../state/GameContext";
 import { CalendarModal } from "./modals/CalendarModal";
@@ -24,7 +24,8 @@ interface HUDProps {
 
 export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFullscreen, onOpenThinking, onOpenVariables, onOpenReading, onOpenDelete, onRegenerate, regenerating, isGenerating = false }: HUDProps) {
   const { currentOrder, setIsCalendarOpen, setIsMapOpen, totalDebt, totalIncome, remainingDebt, isEyeCareMode, setIsEyeCareMode, gameTime, currentWeekday, currentLocation } = useGameContext();
-  
+  const [showMore, setShowMore] = useState(false);
+
   const progress = totalDebt > 0 ? Math.min(100, Math.max(0, (totalIncome / totalDebt) * 100)) : 0;
 
   return (
@@ -32,10 +33,10 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
       <div className="fixed top-0 left-0 right-0 z-40 p-2 pointer-events-none">
         {/* 宽屏：三列左右布局；窄屏：上下堆叠 */}
         <div className="flex flex-col lg:flex-row items-stretch gap-2 w-full">
-          
-          {/* Left column: 时间 / 地点 / 折叠按钮 */}
-          <div className="flex flex-col gap-2 shrink-0 pointer-events-auto">
-            <PopCard 
+
+          {/* Left column: 时间 / 地点 / 折叠按钮 — 大屏显示，竖屏隐藏到"更多" */}
+          <div className="hidden lg:flex flex-col gap-2 shrink-0 pointer-events-auto">
+            <PopCard
               onClick={() => setIsCalendarOpen(true)}
               className="py-1 px-3 flex items-center gap-2 bg-pop-cyan clip-diagonal shadow-pop-cyan cursor-pointer hover:scale-105 transition-transform"
             >
@@ -45,56 +46,56 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
               </span>
             </PopCard>
             <div className="flex gap-2">
-              <PopCard 
+              <PopCard
                 onClick={() => setIsMapOpen(true)}
                 className="py-1 px-3 flex items-center gap-2 bg-pop-yellow clip-diagonal shadow-pop-cyan cursor-pointer hover:scale-105 transition-transform flex-1"
               >
                 <MapPin className="w-4 h-4 shrink-0" />
                 <span className="font-bold text-sm whitespace-nowrap">{currentLocation}</span>
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={() => setIsEyeCareMode(!isEyeCareMode)}
                 className={`py-1 px-2 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform clip-diagonal shrink-0 ${isEyeCareMode ? 'bg-[#cce3de] text-[#2c3e50]' : 'bg-gray-200 text-gray-700'}`}
                 title="护眼模式"
               >
                 {isEyeCareMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onToggleFullscreen}
                 className="py-1 px-2 flex items-center justify-center bg-pop-black text-white cursor-pointer hover:scale-105 hover:bg-pop-pink transition-transform clip-diagonal shrink-0"
                 title={isFullscreen ? "退出全屏" : "全屏模式"}
               >
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onOpenReading}
                 className="py-1 px-2 flex items-center justify-center bg-pop-cyan text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-yellow transition-transform clip-diagonal shrink-0"
                 title="剧情回顾"
               >
                 <BookText className="w-4 h-4" />
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onOpenDelete}
                 className="py-1 px-2 flex items-center justify-center bg-pop-pink text-white cursor-pointer hover:scale-105 hover:bg-pop-yellow hover:text-pop-black transition-transform clip-diagonal shrink-0"
                 title="删除楼层"
               >
                 <Trash2 className="w-4 h-4" />
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onRegenerate}
                 className="py-1 px-2 flex items-center justify-center bg-pop-black text-white cursor-pointer hover:scale-105 hover:bg-pop-pink transition-transform clip-diagonal shrink-0"
                 title="重新生成"
               >
                 <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onOpenThinking}
                 className="py-1 px-2 flex items-center justify-center bg-pop-cyan text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-yellow transition-transform clip-diagonal shrink-0"
                 title="思维链"
               >
                 <Brain className="w-4 h-4" />
               </PopCard>
-              <PopCard 
+              <PopCard
                 onClick={onOpenVariables}
                 className="py-1 px-2 flex items-center justify-center bg-pop-yellow text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-cyan transition-transform clip-diagonal shrink-0"
                 title="变量"
@@ -103,7 +104,7 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
               </PopCard>
               <FloorSelector />
             </div>
-            <PopCard 
+            <PopCard
               onClick={onToggleSidebar}
               className="py-1 px-2 flex items-center justify-center bg-pop-yellow text-pop-black clip-diagonal shadow-pop-pink cursor-pointer hover:scale-110 transition-transform"
             >
@@ -111,17 +112,96 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
             </PopCard>
           </div>
 
-          {/* Center column: Debt Progress — 跨两行等高 */}
+          {/* 竖屏顶部栏：一行核心按钮 */}
+          <div className="flex lg:hidden flex-wrap items-center gap-1.5 pointer-events-auto w-full">
+            <PopCard
+              onClick={() => setIsCalendarOpen(true)}
+              className="py-1 px-2 flex items-center gap-1 bg-pop-cyan text-pop-black cursor-pointer hover:scale-105 transition-transform clip-diagonal shrink-0"
+              title="时间"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span className="font-bold text-xs">{gameTime.getMonth() + 1}/{gameTime.getDate()}</span>
+            </PopCard>
+            <PopCard
+              onClick={() => setIsMapOpen(true)}
+              className="py-1 px-2 flex items-center gap-1 bg-pop-yellow text-pop-black cursor-pointer hover:scale-105 transition-transform clip-diagonal shrink-0"
+              title="地点"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="font-bold text-xs truncate max-w-[60px]">{currentLocation}</span>
+            </PopCard>
+            <PopCard
+              onClick={onToggleFullscreen}
+              className="py-1 px-2 flex items-center justify-center bg-pop-black text-white cursor-pointer hover:scale-105 hover:bg-pop-pink transition-transform clip-diagonal shrink-0"
+              title={isFullscreen ? "退出全屏" : "全屏模式"}
+            >
+              {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </PopCard>
+            <PopCard
+              onClick={onOpenReading}
+              className="py-1 px-2 flex items-center justify-center bg-pop-cyan text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-yellow transition-transform clip-diagonal shrink-0"
+              title="剧情回顾"
+            >
+              <BookText className="w-3.5 h-3.5" />
+            </PopCard>
+            <PopCard
+              onClick={onOpenThinking}
+              className="py-1 px-2 flex items-center justify-center bg-pop-cyan text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-yellow transition-transform clip-diagonal shrink-0"
+              title="思维链"
+            >
+              <Brain className="w-3.5 h-3.5" />
+            </PopCard>
+            <PopCard
+              onClick={() => setIsEyeCareMode(!isEyeCareMode)}
+              className={`py-1 px-2 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform clip-diagonal shrink-0 ${isEyeCareMode ? 'bg-[#cce3de] text-[#2c3e50]' : 'bg-gray-200 text-gray-700'}`}
+              title="护眼模式"
+            >
+              {isEyeCareMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </PopCard>
+            <PopCard
+              onClick={onOpenDelete}
+              className="py-1 px-2 flex items-center justify-center bg-pop-pink text-white cursor-pointer hover:scale-105 hover:bg-pop-yellow hover:text-pop-black transition-transform clip-diagonal shrink-0"
+              title="删除楼层"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </PopCard>
+            <PopCard
+              onClick={onRegenerate}
+              className="py-1 px-2 flex items-center justify-center bg-pop-black text-white cursor-pointer hover:scale-105 hover:bg-pop-pink transition-transform clip-diagonal shrink-0"
+              title="重新生成"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin' : ''}`} />
+            </PopCard>
+            <PopCard
+              onClick={onOpenVariables}
+              className="py-1 px-2 flex items-center justify-center bg-pop-yellow text-pop-black cursor-pointer hover:scale-105 hover:bg-pop-cyan transition-transform clip-diagonal shrink-0"
+              title="变量"
+            >
+              <Database className="w-3.5 h-3.5" />
+            </PopCard>
+            <div className="shrink-0">
+              <FloorSelector />
+            </div>
+            <PopCard
+              onClick={onToggleSidebar}
+              className="py-1 px-2 flex items-center justify-center bg-pop-yellow text-pop-black clip-diagonal shadow-pop-pink cursor-pointer hover:scale-110 transition-transform shrink-0"
+              title="侧边栏"
+            >
+              {isSidebarOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
+            </PopCard>
+          </div>
+
+          {/* Center column: Debt Progress — 大屏跨两行等高，竖屏极简 */}
           <PopCard skew className="flex-1 flex flex-col justify-center bg-pop-black text-white p-2 pointer-events-auto border-pop-pink shadow-pop-pink relative overflow-hidden">
             <div className="absolute inset-0 bg-halftone opacity-50"></div>
             <div className="relative z-10 flex justify-between items-end mb-1">
-              <span className="text-pop-pink font-black text-lg text-stroke-sm italic">REMAINING DEBT</span>
+              <span className="text-pop-pink font-black text-lg text-stroke-sm italic hidden lg:inline">REMAINING DEBT</span>
               <span className="text-xl font-black text-pop-yellow drop-shadow-[2px_2px_0_#ff3366]">
                 ¥{remainingDebt.toLocaleString()}
               </span>
             </div>
             <div className="h-4 w-full bg-white pop-border clip-diagonal relative overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="absolute top-0 left-0 h-full bg-stripes-cyan-pink"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -130,8 +210,8 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
             </div>
           </PopCard>
 
-          {/* Right column: 当前角色 / 任务 */}
-          <div className="flex flex-col gap-2 shrink-0 pointer-events-auto min-w-[160px]">
+          {/* Right column: 当前角色 / 任务 — 大屏显示，竖屏隐藏 */}
+          <div className="hidden lg:flex flex-col gap-2 shrink-0 pointer-events-auto min-w-[160px]">
             {/* 状态灯 */}
             <PopCard
               className={cn(

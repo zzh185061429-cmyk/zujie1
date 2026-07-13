@@ -57,7 +57,7 @@ export function DeleteFloorsModal({ isOpen, onClose }: DeleteFloorsModalProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="relative w-full max-w-sm bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-4"
+        className="relative w-full h-full md:w-auto md:max-w-sm bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-0 md:mx-4"
       >
         {/* 标题栏 */}
         <div className="shrink-0 bg-pop-black text-white p-4 pop-border border-b-4 border-pop-pink flex items-center justify-between">

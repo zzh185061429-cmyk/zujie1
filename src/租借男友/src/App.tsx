@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { HUD } from './components/HUD';
-import { ToastProvider } from './components/ToastProvider';
+import { ToastProvider, useToast } from './components/ToastProvider';
 import { ChatBar } from './components/ChatBar';
 import { GameProvider, useGameContext } from './state/GameContext';
 import { StoryView } from './views/StoryView';
@@ -15,21 +15,10 @@ import { ReadingModal } from './views/ReadingModal';
 import { ThinkingChainModal } from './views/ThinkingChainModal';
 import { VariableViewerModal } from './views/VariableViewerModal';
 import { DeleteFloorsModal } from './views/DeleteFloorsModal';
-import { useToast } from './components/ToastProvider';
 import { regenerateCurrentFloor } from './utils/interaction';
 import { MessageSquare, Calendar, Users, X, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './utils';
-
-// 计算等比例缩放比：手机端缩小，PC 端保持 1
-function calcScale(): number {
-  const designW = 1280;
-  const designH = 720;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const scale = Math.min(1, vw / designW, vh / designH);
-  return Math.max(0.5, scale);
-}
 
 type Tab = 'story' | 'dispatch' | 'archive';
 
@@ -44,7 +33,6 @@ function AppContent() {
   const [regenerating, setRegenerating] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [scale, setScale] = useState(1);
   const { isEyeCareMode, isViewingHistory, viewingFloorId, lastAssistantFloorId, goToLatest, startGenerating, finishGenerating } = useGameContext();
   const { showToast } = useToast();
 
@@ -59,41 +47,17 @@ function AppContent() {
     return () => document.removeEventListener('fullscreenchange', onFsChange);
   }, [isScriptMode]);
 
-  // 监听窗口大小变化，动态计算缩放比
-  useEffect(() => {
-    const updateScale = () => setScale(calcScale());
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
-  }, []);
-
   const toggleFullscreen = async () => {
     if (isScriptMode) {
-      // 脚本模式：CSS 全屏，直接调用父脚本注入的 __setFullscreen__ 函数
       const next = !isFullscreen;
       setIsFullscreen(next);
       (window as any).__setFullscreen__(next);
-      // 横屏锁定（中小屏全屏后翻转方向，布局自然适配）
-      try {
-        if (next && 'orientation' in screen) {
-          await (screen.orientation as any).lock('landscape').catch(() => {});
-        } else if ('orientation' in screen) {
-          (screen.orientation as any).unlock();
-        }
-      } catch {}
+      return;
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
     } else {
-      // 前端模式：浏览器原生全屏 API
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-        try { (screen.orientation as any)?.unlock(); } catch {}
-      } else {
-        await document.documentElement.requestFullscreen();
-        try {
-          if ('orientation' in screen) {
-            await (screen.orientation as any).lock('landscape').catch(() => {});
-          }
-        } catch {}
-      }
+      await document.documentElement.requestFullscreen();
     }
   };
 
@@ -126,7 +90,7 @@ function AppContent() {
 
   return (
     <div 
-      className="w-full h-full flex items-center justify-center overflow-hidden"
+      className="w-full h-dvh flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: '#1a1a1a' }}
     >
       <div 
@@ -166,7 +130,7 @@ function AppContent() {
           {/* Logo */}
           <div className="flex flex-col items-center justify-center p-6 mb-8 bg-stripes-cyan-pink clip-diagonal mx-4 shadow-pop-pink pop-border">
             <h1 className="text-3xl font-black italic text-white text-stroke-sm -skew-x-12">DEBT</h1>
-            <h1 className="text-4xl font-black italic text-pop-yellow text-stroke -skew-x-12 mt-1 drop-shadow-[4px_4px_0_#ff3366]">CLUB</h1>
+            <h1 className="text-4xl font-black italic text-pop-yellow text-stroke -skew-x-12 mt-1 drop-shadow-pop-pink">CLUB</h1>
           </div>
 
           <div className="flex flex-col w-full px-4 gap-4 h-auto items-stretch">
@@ -182,7 +146,7 @@ function AppContent() {
                   }}
                   className={cn(
                     "relative flex-none flex flex-row items-center justify-start gap-4 p-4 transition-all duration-200 group pop-border overflow-hidden",
-                    isActive ? "bg-pop-yellow text-pop-black clip-diagonal shadow-[4px_4px_0_#ff3366]" : "bg-white text-gray-500 hover:bg-gray-100"
+                    isActive ? "bg-pop-yellow text-pop-black clip-diagonal shadow-pop-pink" : "bg-white text-gray-500 hover:bg-gray-100"
                   )}
                 >
                   {isActive && <div className="absolute inset-0 bg-halftone opacity-30"></div>}
@@ -202,7 +166,7 @@ function AppContent() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 relative w-full min-h-full overflow-hidden bg-white">
+        <main className="flex-1 relative w-full h-dvh overflow-hidden bg-white">
           {activeTab === 'story' && <StoryView />}
           {activeTab === 'dispatch' && <DispatchView />}
           {activeTab === 'archive' && <ArchiveView />}
@@ -216,7 +180,7 @@ function AppContent() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-50"
+              className="fixed bottom-0 left-0 right-0 z-50 pb-safe"
             >
               <ChatBar onClose={() => setIsChatOpen(false)} onGeneratingChange={setIsGenerating} isGenerating={isGenerating} />
             </motion.div>
@@ -231,7 +195,7 @@ function AppContent() {
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
               onClick={() => setIsChatOpen(true)}
-              className="fixed bottom-0 left-0 z-50 w-12 h-12 bg-pop-yellow text-pop-black rounded-full pop-border shadow-pop-pink flex items-center justify-center hover:scale-110 transition-transform active:scale-90"
+              className="fixed bottom-4 left-4 z-50 w-12 h-12 bg-pop-yellow text-pop-black rounded-full pop-border shadow-pop-pink flex items-center justify-center hover:scale-110 transition-transform active:scale-90 pb-safe"
               title="展开输入栏"
             >
               <MessageCircle className="w-6 h-6" />

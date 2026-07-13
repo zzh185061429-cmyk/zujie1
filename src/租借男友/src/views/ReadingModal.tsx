@@ -65,7 +65,7 @@ export function ReadingModal({ isOpen, onClose }: ReadingModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        <div className="fixed inset-0 z-100 flex items-center justify-center">
           {/* 背景遮罩 */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -81,7 +81,7 @@ export function ReadingModal({ isOpen, onClose }: ReadingModalProps) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-3xl h-[90%] max-h-[800px] bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-4"
+            className="relative w-full h-full md:w-auto md:max-w-3xl md:h-[90%] md:max-h-[800px] bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-0 md:mx-4"
           >
             {/* 标题栏 */}
             <div className="shrink-0 bg-pop-black text-white p-4 pop-border border-b-4 border-pop-yellow flex items-center justify-between">

@@ -202,12 +202,28 @@ export async function regenerateCurrentFloor(currentFloorId?: number | null): Pr
 
     console.info('[regen] 找到 user 楼层 #' + userFloorId + '，输入长度:', userText.length);
 
-    // ── 步骤 3：静默生成（不创建新楼层）──
+    // ── 步骤 3：获取当前聊天历史，截断到 user 楼层 ──
+    // 为了让 generate 基于 user 输入重新生成（而不是基于已有 assistant 继续），
+    // 我们需要覆盖 chat_history，只保留到 user 楼层为止的历史
+    const allMessages = getChatMessages('0-' + userFloorId);
+    const historyPrompts: RolePrompt[] = allMessages.map(msg => ({
+      role: msg.role as 'system' | 'assistant' | 'user',
+      content: msg.message || '',
+    }));
+
+    console.info('[regen] 截断历史到楼层 #' + userFloorId + '，共 ' + historyPrompts.length + ' 条消息');
+
+    // ── 步骤 4：静默生成（覆盖聊天历史，让 AI 基于 user 重新生成）──
     console.info('[regen] 开始调用 generate...');
     const rawResponse = await generate({
       user_input: userText,
       should_stream: false,
-      should_silence: true,  // 关键：静默生成，不创建新楼层
+      should_silence: true,  // 静默生成，不创建新楼层
+      overrides: {
+        chat_history: {
+          prompts: historyPrompts,
+        },
+      },
     });
     console.info('[regen] generate 返回:', rawResponse ? '有内容' : '空');
 

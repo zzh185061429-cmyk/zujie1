@@ -45,11 +45,7 @@ $(() => {
               height: '100vh',
               zIndex: 9999,
             });
-            try {
-              if ('orientation' in screen) {
-                (screen.orientation as any).lock('landscape').catch(() => {});
-              }
-            } catch {}
+            // 不再锁定横屏，保持竖屏
           } else {
             $iframe.css({
               position: 'absolute',
@@ -59,7 +55,6 @@ $(() => {
               height: '100%',
               zIndex: 10,
             });
-            try { (screen.orientation as any)?.unlock(); } catch {}
           }
         };
       }

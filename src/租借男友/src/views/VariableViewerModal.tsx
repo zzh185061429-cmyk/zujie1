@@ -171,7 +171,7 @@ export function VariableViewerModal({ isOpen, onClose }: VariableViewerModalProp
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-2xl h-[85%] max-h-[750px] bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-4"
+            className="relative w-full h-full md:w-auto md:max-w-2xl md:h-[85%] md:max-h-[750px] bg-white pop-border shadow-pop-lg z-10 flex flex-col mx-0 md:mx-4"
           >
             {/* 标题栏 */}
             <div className="shrink-0 bg-pop-black text-white p-4 pop-border border-b-4 border-pop-cyan flex items-center justify-between">

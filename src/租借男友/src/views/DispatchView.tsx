@@ -247,7 +247,7 @@ export function DispatchView() {
     <div className="w-full h-full bg-halftone flex flex-col">
       
       {/* Scrollable top area */}
-      <div className="flex-1 overflow-y-auto pt-36 md:pt-32 p-4 md:p-8">
+        <div className="flex-1 overflow-y-auto pt-28 md:pt-32 p-4 md:p-8">
         
         <div className="max-w-7xl mx-auto space-y-8 pb-12">
         
@@ -356,7 +356,7 @@ export function DispatchView() {
                 transition={{ type: "spring" }}
               >
                 <PopCard variant="cyan" className="flex flex-col md:flex-row items-stretch md:items-center gap-6 p-6 md:p-8 clip-diagonal border-4">
-                  <div className="bg-pop-black text-white clip-diagonal w-32 h-32 md:w-40 md:h-40 flex items-center justify-center shrink-0 shadow-[4px_4px_0_#ff3366] border-4 border-pop-pink overflow-hidden">
+                  <div className="bg-pop-black text-white clip-diagonal w-32 h-32 md:w-40 md:h-40 flex items-center justify-center shrink-0 shadow-pop-pink border-4 border-pop-pink overflow-hidden">
                     <img src={getCharData(dispatchResult.char1)?.avatar} alt={dispatchResult.char1} className="w-full h-full object-cover object-top scale-110" />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -379,7 +379,7 @@ export function DispatchView() {
                     </div>
                     )}
                   </div>
-                  <div className="md:text-right bg-white p-4 pop-border shadow-[4px_4px_0_#ff3366] self-center">
+                  <div className="md:text-right bg-white p-4 pop-border shadow-pop-pink self-center">
                     <span className="block text-sm font-bold text-gray-500 mb-1">预期总收入</span>
                     <span className="text-3xl md:text-4xl font-black font-mono text-pop-pink">
                       ¥{dispatchResult.duration1?.price?.toLocaleString() || 0}
@@ -399,7 +399,7 @@ export function DispatchView() {
                 <PopCard className="bg-stripes text-white border-4 border-pop-yellow shadow-[8px_8px_0_#ffcc00] p-6 md:p-8 relative overflow-hidden clip-diagonal">
                   <div className="absolute -top-10 -right-10 text-pop-pink opacity-80 mix-blend-screen pointer-events-none"><Skull className="w-64 h-64" /></div>
                   <div className="relative z-10">
-                    <div className="inline-block bg-pop-yellow text-pop-black px-6 py-2 font-black text-2xl mb-6 -skew-x-12 uppercase animate-pulse border-4 border-pop-black shadow-[4px_4px_0_#ff3366]">
+                    <div className="inline-block bg-pop-yellow text-pop-black px-6 py-2 font-black text-2xl mb-6 -skew-x-12 uppercase animate-pulse border-4 border-pop-black shadow-pop-pink">
                       💥 撞单修罗场警报 (CRASH DETECTED)
                     </div>
                     <div className="grid md:grid-cols-2 gap-6">
@@ -445,7 +445,7 @@ export function DispatchView() {
                     </div>
                     <div className="mt-6 flex flex-col items-center">
                       <p className="text-xl font-bold mb-4 font-mono">总预期收入: ¥{((dispatchResult.duration1?.price || 0) + (dispatchResult.duration2?.price || 0)).toLocaleString()}</p>
-                      <PopButton onClick={handleAcceptCrash} variant="danger" size="lg" className="shadow-[4px_4px_0_#1a1a1a] hover:scale-105 active:scale-95 bg-white text-pop-black border-white hover:bg-pop-pink hover:text-white hover:border-pop-black">
+                      <PopButton onClick={handleAcceptCrash} variant="danger" size="lg" className="shadow-pop hover:scale-105 active:scale-95 bg-white text-pop-black border-white hover:bg-pop-pink hover:text-white hover:border-pop-black">
                         强行时间管理 (极度危险)
                       </PopButton>
                     </div>

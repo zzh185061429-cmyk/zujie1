@@ -25,7 +25,7 @@ export function MapModal() {
   const filteredLocations = MAP_LOCATIONS.filter(l => l.category === activeTab);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 p-2 md:p-4">
+    <div className="fixed inset-0 z-100 flex items-start md:items-center justify-center pt-0 md:pt-0 p-0 md:p-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -38,7 +38,7 @@ export function MapModal() {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.8, y: 50 }}
         transition={{ type: "spring", bounce: 0.5 }}
-        className="relative w-full max-w-4xl bg-white pop-border shadow-[8px_8px_0_#ffcc00] z-10 flex flex-col overflow-hidden clip-diagonal max-h-[calc(100vh-6rem)]"
+        className="relative w-full h-full md:w-auto md:max-w-4xl bg-white pop-border shadow-[8px_8px_0_#ffcc00] z-10 flex flex-col overflow-hidden clip-diagonal md:max-h-[calc(100vh-6rem)]"
       >
         <div className="bg-pop-yellow text-pop-black p-4 flex justify-between items-center border-b-4 border-pop-black shrink-0">
           <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export function MapModal() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => handleLocationClick(loc.name)}
-                    className="bg-white border-4 border-pop-black p-4 shadow-[4px_4px_0_#1a1a1a] clip-diagonal flex flex-col cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+                    className="bg-white border-4 border-pop-black p-4 shadow-pop clip-diagonal flex flex-col cursor-pointer hover:scale-105 active:scale-95 transition-transform"
                   >
                     <div className="flex items-start gap-2 mb-2">
                       <MapPin className="w-5 h-5 shrink-0 mt-0.5 text-pop-cyan" />
