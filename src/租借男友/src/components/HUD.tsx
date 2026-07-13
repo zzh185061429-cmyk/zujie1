@@ -191,8 +191,83 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
             </PopCard>
           </div>
 
-          {/* Center column: Debt Progress — 大屏跨两行等高，竖屏极简 */}
-          <PopCard skew className="flex-1 flex flex-col justify-center bg-pop-black text-white p-2 pointer-events-auto border-pop-pink shadow-pop-pink relative overflow-hidden">
+          {/* 竖屏：债务条 + 状态灯/任务 左右并排 */}
+          <div className="flex lg:hidden items-stretch gap-2 w-full">
+            {/* 左侧：缩短的债务条 */}
+            <PopCard skew className="flex-1 flex flex-col justify-center bg-pop-black text-white p-2 pointer-events-auto border-pop-pink shadow-pop-pink relative overflow-hidden min-w-0">
+              <div className="absolute inset-0 bg-halftone opacity-50"></div>
+              <div className="relative z-10 flex justify-between items-end mb-1">
+                <span className="text-pop-pink font-black text-xs italic hidden sm:inline">DEBT</span>
+                <span className="text-sm font-black text-pop-yellow drop-shadow-[2px_2px_0_#ff3366]">
+                  ¥{remainingDebt.toLocaleString()}
+                </span>
+              </div>
+              <div className="h-3 w-full bg-white pop-border clip-diagonal relative overflow-hidden">
+                <motion.div
+                  className="absolute top-0 left-0 h-full bg-stripes-cyan-pink"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, type: "spring" }}
+                />
+              </div>
+            </PopCard>
+
+            {/* 右侧：状态灯 + 当前任务 上下堆叠 */}
+            <div className="flex flex-col gap-1 shrink-0 w-[100px] pointer-events-auto">
+              {/* 状态灯 */}
+              <PopCard
+                className={cn(
+                  "py-1 px-2 flex items-center justify-center gap-1 clip-diagonal border-2 border-white shadow-[2px_2px_0_#1a1a1a] transition-colors duration-300",
+                  isGenerating ? "bg-red-500 text-white" : "bg-green-500 text-white"
+                )}
+                title={isGenerating ? "AI 生成中..." : "AI 空闲"}
+              >
+                <div className={cn(
+                  "w-2 h-2 rounded-full animate-pulse",
+                  isGenerating ? "bg-white" : "bg-white"
+                )} />
+                <span className="font-bold text-xs whitespace-nowrap">
+                  {isGenerating ? "生成中" : "就绪"}
+                </span>
+              </PopCard>
+
+              {/* 当前任务 */}
+              <AnimatePresence mode="wait">
+                {!currentOrder ? (
+                  <motion.div
+                    key="none"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                  >
+                    <PopCard className="py-1 px-2 flex items-center justify-center gap-1 bg-pop-black text-gray-400 clip-diagonal border-2 border-gray-600 shadow-none">
+                      <span className="font-bold text-xs truncate">无任务</span>
+                    </PopCard>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="active"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    className="flex flex-col gap-1"
+                  >
+                    <PopCard className="py-1 px-2 flex items-center gap-1 bg-pop-pink clip-diagonal border-2 border-pop-black shadow-[2px_2px_0_#1a1a1a]">
+                      <User className="w-3 h-3 shrink-0 text-white" />
+                      <span className="font-bold text-xs text-white whitespace-nowrap overflow-hidden text-ellipsis">{currentOrder.charName}</span>
+                    </PopCard>
+                    <PopCard className="py-1 px-2 flex items-center gap-1 bg-white clip-diagonal border-2 border-pop-black shadow-[2px_2px_0_#1a1a1a] text-pop-pink">
+                      <Briefcase className="w-3 h-3 shrink-0 text-pop-black" />
+                      <span className="font-bold text-xs text-pop-black whitespace-nowrap overflow-hidden text-ellipsis">{currentOrder.task}</span>
+                    </PopCard>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Center column: Debt Progress — 大屏跨两行等高 */}
+          <PopCard skew className="hidden lg:flex flex-1 flex-col justify-center bg-pop-black text-white p-2 pointer-events-auto border-pop-pink shadow-pop-pink relative overflow-hidden">
             <div className="absolute inset-0 bg-halftone opacity-50"></div>
             <div className="relative z-10 flex justify-between items-end mb-1">
               <span className="text-pop-pink font-black text-lg text-stroke-sm italic hidden lg:inline">REMAINING DEBT</span>
