@@ -178,3 +178,147 @@ export const CHARACTER_SPRITES_NSFW: Record<string, Record<string, string>> = {
   季明舒: {},
   步玲燕: {},
 };
+
+/** NSFW 阶段列表 */
+export const NSFW_PHASES = [
+  '开始', '脱衣服1', '脱衣服2', '插入1', '插入2', '插入3', '插入4', '插入5', '插入6', '插入7', '高潮1', '高潮2', '高潮3', '事后',
+] as const;
+
+export type NsfwPhase = typeof NSFW_PHASES[number];
+
+/** 画廊解锁密码 */
+export const GALLERY_PASSWORD = '类脑首发，偷卡死妈';
+
+/** 每个角色的 NSFW CG 图片（未解锁前为空字符串） */
+export const NSFW_CGS: Record<string, Record<NsfwPhase, string>> = {
+  // 所有角色默认未解锁，全部为空字符串
+  温知晚: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  沈千金: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  椎名律: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  周念安: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  裴今歌: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  姜朝渔: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  傅霁: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  罗兰: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  霍千黎: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  季明舒: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  步玲燕: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+};
+
+/** 从浏览器本地存储恢复 NSFW 解锁状态（换聊天、刷新后都有效） */
+function restoreNsfwFromStorage(): void {
+  try {
+    const raw = localStorage.getItem('rental_boyfriend_nsfw_unlocked');
+    if (!raw) return;
+    const unlockedChars: string[] = JSON.parse(raw);
+    if (!Array.isArray(unlockedChars) || unlockedChars.length === 0) return;
+
+    for (const char of unlockedChars) {
+      const realCgs = NSFW_CGS_ALL[char];
+      if (realCgs) {
+        NSFW_CGS[char] = { ...realCgs };
+        console.info(`[NSFW] 从本地存储恢复解锁: ${char}`);
+      }
+    }
+  } catch (e) {
+    console.warn('[NSFW] 从本地存储恢复解锁状态失败:', e);
+  }
+}
+
+/** 每个角色的 NSFW 触发地点（未解锁前显示"未知"） */
+export const NSFW_LOCATIONS: Record<string, string> = {
+  温知晚: '艺术楼练功房',
+  沈千金: '未知',
+  椎名律: '未知',
+  周念安: '未知',
+  裴今歌: '未知',
+  姜朝渔: '未知',
+  傅霁: '未知',
+  罗兰: '未知',
+  霍千黎: '未知',
+  季明舒: '未知',
+  步玲燕: '未知',
+};
+
+/** 检查某角色在指定地点是否可触发 NSFW */
+export function canTriggerNsfw(character: string, location: string): boolean {
+  const requiredLoc = NSFW_LOCATIONS[character];
+  if (!requiredLoc || requiredLoc === '未知') return false;
+  return requiredLoc === location;
+}
+
+/** 获取某角色某阶段的 NSFW CG（未解锁返回空字符串） */
+export function getNsfwCg(character: string, phase: NsfwPhase): string {
+  return NSFW_CGS[character]?.[phase] || '';
+}
+
+/** 检查某角色的 NSFW 是否已解锁 */
+export function isNsfwUnlocked(character: string): boolean {
+  const cgs = NSFW_CGS[character];
+  if (!cgs) return false;
+  return Object.values(cgs).some(url => url !== '');
+}
+
+/** 所有角色的真实 NSFW CG 数据（密码解锁后填入） */
+export const NSFW_CGS_ALL: Record<string, Record<NsfwPhase, string>> = {
+  温知晚: {
+    开始: 'https://i.postimg.cc/VkXP3bXW/kai-shi.png',
+    脱衣服1: 'https://i.postimg.cc/yNBCBYTF/tuo-yi-fu1.png',
+    脱衣服2: 'https://i.postimg.cc/9fVHVFBL/tuo-yi-fu2.png',
+    插入1: 'https://i.postimg.cc/vHgstKBn/cha-ru1.png',
+    插入2: 'https://i.postimg.cc/pXhHJSTn/cha-ru2.png',
+    插入3: 'https://i.postimg.cc/PrpjQ7xp/cha-ru3.png',
+    插入4: 'https://i.postimg.cc/Qx93Jztc/cha-ru4.png',
+    插入5: 'https://i.postimg.cc/Yq5wnxGX/cha-ru5.png',
+    插入6: 'https://i.postimg.cc/MKC8PYf2/cha-ru6.png',
+    插入7: 'https://i.postimg.cc/7YFysNJ4/cha-ru7.png',
+    高潮1: 'https://i.postimg.cc/dtbKH9Zv/gao-chao1.png',
+    高潮2: 'https://i.postimg.cc/dtbKH9ZV/gao-chao2.png',
+    高潮3: 'https://i.postimg.cc/W10cQJ04/gao-chao3.png',
+    事后: 'https://i.postimg.cc/4xpRrhp1/shi-hou.png',
+  },
+  // 其他角色暂无 CG，保持空字符串
+  沈千金: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  椎名律: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  周念安: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  裴今歌: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  姜朝渔: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  傅霁: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  罗兰: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  霍千黎: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  季明舒: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+  步玲燕: Object.fromEntries(NSFW_PHASES.map(p => [p, ''])) as Record<NsfwPhase, string>,
+};
+
+// 模块加载时立即尝试恢复（必须在 NSFW_CGS_ALL 定义之后）
+restoreNsfwFromStorage();
+
+/** 解锁所有角色的 NSFW CG（密码验证后调用） */
+export function unlockAllNsfw(): void {
+  Object.entries(NSFW_CGS_ALL).forEach(([char, cgs]) => {
+    NSFW_CGS[char] = { ...cgs };
+  });
+}
+
+/** 将已解锁的角色列表持久化到浏览器本地存储（换聊天、刷新后都有效） */
+function saveNsfwUnlockToStorage(): void {
+  try {
+    const unlockedChars = Object.entries(NSFW_CGS)
+      .filter(([_, cgs]) => Object.values(cgs).some(url => url !== ''))
+      .map(([char, _]) => char);
+    localStorage.setItem('rental_boyfriend_nsfw_unlocked', JSON.stringify(unlockedChars));
+    console.info('[NSFW] 解锁状态已持久化到本地存储:', unlockedChars);
+  } catch (e) {
+    console.warn('[NSFW] 持久化解锁状态到本地存储失败:', e);
+  }
+}
+
+/** 检查密码是否正确，正确则自动解锁所有 NSFW 并持久化到本地 */
+export function checkGalleryPassword(input: string): boolean {
+  const isCorrect = input === GALLERY_PASSWORD;
+  if (isCorrect) {
+    unlockAllNsfw();
+    saveNsfwUnlockToStorage();
+  }
+  return isCorrect;
+}

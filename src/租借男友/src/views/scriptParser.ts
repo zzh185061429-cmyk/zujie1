@@ -1,4 +1,4 @@
-import { CHARACTER_AVATARS, CHARACTER_COLORS, getCharacterSprite } from '../data/characterData';
+import { CHARACTER_SPRITES, CHARACTER_AVATARS, CHARACTER_COLORS, getCharacterSprite } from '../data/characterData';
 
 export type LineType = 'narrator' | 'dialog' | 'thought';
 
@@ -12,17 +12,20 @@ export interface ScriptLine {
   sprite?: string;
 }
 
-/** 角色名[情绪]:"对话内容" */
-const DIALOG_RE = /^(.+?)\[(.+?)\]:"(.+)"$/s;
+/** 11个有立绘的角色名 */
+const NAMED_CHARS = Object.keys(CHARACTER_SPRITES);
 
-/** <user>:"对话内容" — <user> 不需要情绪标签 */
-const USER_DIALOG_RE = /^<user>:"(.+)"$/s;
+/** 11角色带情绪:"对话" */
+const DIALOG_RE = /^(.+?)\[(.+?)\]:\s*["""](.+)["""]\s*$/s;
 
-/** 角色名[情绪]:*内心独白* */
-const THOUGHT_RE = /^(.+?)\[(.+?)\]:\*(.+)\*$/s;
+/** 11角色带情绪:*独白* */
+const THOUGHT_RE = /^(.+?)\[(.+?)\]:\s*\*(.+)\*\s*$/s;
 
-/** <user>:*内心独白* — <user> 不需要情绪标签 */
-const USER_THOUGHT_RE = /^<user>:\*(.+)\*$/s;
+/** 任意名字（无情绪）:"对话" — 玩家或其他NPC */
+const PLAIN_DIALOG_RE = /^\s*(.+?)\s*:\s*["""](.+)["""]\s*$/s;
+
+/** 任意名字（无情绪）:*独白* — 玩家或其他NPC */
+const PLAIN_THOUGHT_RE = /^\s*(.+?)\s*:\s*\*(.+)\*\s*$/s;
 
 /**
  * 需要从解析前移除的思维/规划标签对及其内容
@@ -69,7 +72,7 @@ function stripThinkingZones(raw: string): string {
 /**
  * 从 AI 消息文本中提取 <content> 标签内的剧本内容，解析为 ScriptLine[]
  * 按换行切段，一行 = 一次点击推进
- * 支持角色名[情绪]:"对话" 和 <user>:"对话" 两种格式
+ * 11个角色带情绪，其他名字（含玩家）无情绪
  */
 export function parseScriptContent(rawText: string): ScriptLine[] {
   const cleaned = stripThinkingZones(rawText);
@@ -82,66 +85,69 @@ export function parseScriptContent(rawText: string): ScriptLine[] {
   return segments.map(segment => {
     const trimmed = segment.trim();
 
-    // 1. 优先匹配带情绪的对话：角色名[情绪]:"对话"
+    // 1. 优先匹配11角色的带情绪对话：角色名[情绪]:"对话"
     const dialogMatch = trimmed.match(DIALOG_RE);
     if (dialogMatch) {
       const speaker = dialogMatch[1].trim();
       const emotion = dialogMatch[2].trim();
-      return {
-        type: 'dialog' as const,
-        speaker,
-        emotion,
-        text: dialogMatch[3],
-        color: CHARACTER_COLORS[speaker] || 'bg-pop-cyan',
-        avatar: isUser(speaker) ? undefined : CHARACTER_AVATARS[speaker],
-        sprite: isUser(speaker) ? undefined : getCharacterSprite(speaker, emotion),
-      };
+      if (NAMED_CHARS.includes(speaker)) {
+        return {
+          type: 'dialog' as const,
+          speaker,
+          emotion,
+          text: dialogMatch[3],
+          color: CHARACTER_COLORS[speaker] || 'bg-pop-cyan',
+          avatar: CHARACTER_AVATARS[speaker],
+          sprite: getCharacterSprite(speaker, emotion),
+        };
+      }
     }
 
-    // 2. 匹配 <user> 对话：<user>:"对话"（无情绪）
-    const userDialogMatch = trimmed.match(USER_DIALOG_RE);
-    if (userDialogMatch) {
-      return {
-        type: 'dialog' as const,
-        speaker: '<user>',
-        text: userDialogMatch[1],
-        color: 'bg-pop-cyan',
-      };
-    }
-
-    // 3. 匹配带情绪的心理：角色名[情绪]:*心理*
+    // 2. 优先匹配11角色的带情绪独白：角色名[情绪]:*独白*
     const thoughtMatch = trimmed.match(THOUGHT_RE);
     if (thoughtMatch) {
       const speaker = thoughtMatch[1].trim();
       const emotion = thoughtMatch[2].trim();
+      if (NAMED_CHARS.includes(speaker)) {
+        return {
+          type: 'thought' as const,
+          speaker,
+          emotion,
+          text: thoughtMatch[3],
+          color: CHARACTER_COLORS[speaker] || 'bg-pop-cyan',
+          avatar: CHARACTER_AVATARS[speaker],
+          sprite: getCharacterSprite(speaker, emotion),
+        };
+      }
+    }
+
+    // 3. 匹配任意名字的无情绪对话：名字:"对话"（含玩家名）
+    const plainDialogMatch = trimmed.match(PLAIN_DIALOG_RE);
+    if (plainDialogMatch) {
+      const speaker = plainDialogMatch[1].trim();
       return {
-        type: 'thought' as const,
+        type: 'dialog' as const,
         speaker,
-        emotion,
-        text: thoughtMatch[3],
+        text: plainDialogMatch[2],
         color: CHARACTER_COLORS[speaker] || 'bg-pop-cyan',
-        avatar: isUser(speaker) ? undefined : CHARACTER_AVATARS[speaker],
-        sprite: isUser(speaker) ? undefined : getCharacterSprite(speaker, emotion),
+        avatar: CHARACTER_AVATARS[speaker],
       };
     }
 
-    // 4. 匹配 <user> 心理：<user>:*心理*（无情绪）
-    const userThoughtMatch = trimmed.match(USER_THOUGHT_RE);
-    if (userThoughtMatch) {
+    // 4. 匹配任意名字的无情绪独白：名字:*独白*（含玩家名）
+    const plainThoughtMatch = trimmed.match(PLAIN_THOUGHT_RE);
+    if (plainThoughtMatch) {
+      const speaker = plainThoughtMatch[1].trim();
       return {
         type: 'thought' as const,
-        speaker: '<user>',
-        text: userThoughtMatch[1],
-        color: 'bg-pop-cyan',
+        speaker,
+        text: plainThoughtMatch[2],
+        color: CHARACTER_COLORS[speaker] || 'bg-pop-cyan',
+        avatar: CHARACTER_AVATARS[speaker],
       };
     }
 
     // 5. 旁白
     return { type: 'narrator' as const, text: trimmed };
   });
-}
-
-/** <user> 或 我 不需要立绘 */
-function isUser(speaker: string): boolean {
-  return speaker === '<user>' || speaker === '我';
 }

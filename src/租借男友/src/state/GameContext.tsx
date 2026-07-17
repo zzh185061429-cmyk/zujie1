@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { NsfwPhase } from '../data/characterData';
 
 export type CurrentOrder = {
   charName: string;
@@ -37,6 +38,16 @@ export type MvuDispatchData = {
 type GameContextType = {
   currentOrder: CurrentOrder;
   setCurrentOrder: (order: CurrentOrder) => void;
+  // ── NSFW 状态 ──
+  nsfwEnabled: boolean;
+  setNsfwEnabled: (v: boolean) => void;
+  nsfwPhase: NsfwPhase;
+  setNsfwPhase: (phase: NsfwPhase) => void;
+  nsfwChar: string | null;
+  setNsfwChar: (char: string | null) => void;
+  // ── 当前场景中的角色（用于判断 NSFW 触发） ──
+  currentSceneChar: string | null;
+  setCurrentSceneChar: (char: string | null) => void;
   isCalendarOpen: boolean;
   setIsCalendarOpen: (v: boolean) => void;
   isMapOpen: boolean;
@@ -198,6 +209,11 @@ const EMPTY_DISPATCH: MvuDispatchData = {
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [currentOrder, setCurrentOrder] = useState<CurrentOrder>(null);
+  // ── NSFW 状态 ──
+  const [nsfwEnabled, setNsfwEnabled] = useState(false);
+  const [nsfwPhase, setNsfwPhase] = useState<NsfwPhase>('开始');
+  const [nsfwChar, setNsfwChar] = useState<string | null>(null);
+  const [currentSceneChar, setCurrentSceneChar] = useState<string | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isEyeCareMode, setIsEyeCareMode] = useState(false);
@@ -536,6 +552,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   return (
     <GameContext.Provider value={{
       currentOrder, setCurrentOrder,
+      // ── NSFW 状态 ──
+      nsfwEnabled, setNsfwEnabled,
+      nsfwPhase, setNsfwPhase,
+      nsfwChar, setNsfwChar,
+      currentSceneChar, setCurrentSceneChar,
       isCalendarOpen, setIsCalendarOpen,
       isMapOpen, setIsMapOpen,
       totalDebt, totalIncome, remainingDebt,
