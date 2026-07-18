@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useGameContext } from '../state/GameContext';
 import { useToast } from '../components/ToastProvider';
 
-declare function triggerSlash(command: string): Promise<void>;
-
 /**
  * 底部输入栏 — 可折叠
  * - 读取 GameContext.pendingMessage（地图/派单写入的文本）
@@ -98,8 +96,6 @@ export function ChatBar({ onClose }: { onClose: () => void }) {
             placeholder={isBusy ? '剧情生成中，请稍候...' : '输入剧情走向... (Enter 发送, Shift+Enter 换行)'}
             rows={2}
             disabled={isBusy}
-            enterKeyHint="send"
-            inputMode="text"
             className="w-full bg-white text-pop-black font-bold p-3 pr-10 border-4 border-white resize-none
                        placeholder:text-gray-400 focus:outline-none focus:border-pop-yellow
                        transition-colors clip-diagonal text-sm md:text-base

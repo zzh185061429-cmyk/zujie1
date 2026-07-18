@@ -44,9 +44,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className="pointer-events-auto"
             >
               {toast.type === "alert" ? (
-                <PopCard variant="stripes" skew className="flex items-center gap-3 p-4 shadow-pop-lg max-w-xs border-pop-pink">
-                  <AlertTriangle className="w-8 h-8 text-pop-pink animate-pulse shrink-0" />
-                  <span className="font-black text-lg leading-tight uppercase">
+                <PopCard variant="pink" skew className="flex items-center gap-3 p-4 shadow-pop-lg max-w-xs border-pop-pink">
+                  <AlertTriangle className="w-8 h-8 text-white animate-pulse shrink-0" />
+                  <span className="font-black text-lg leading-tight uppercase text-white">
                     {toast.message}
                   </span>
                 </PopCard>

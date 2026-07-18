@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { NsfwPhase } from '../data/characterData';
 
 export type CurrentOrder = {
   charName: string;
@@ -38,16 +37,6 @@ export type MvuDispatchData = {
 type GameContextType = {
   currentOrder: CurrentOrder;
   setCurrentOrder: (order: CurrentOrder) => void;
-  // ── NSFW 状态 ──
-  nsfwEnabled: boolean;
-  setNsfwEnabled: (v: boolean) => void;
-  nsfwPhase: NsfwPhase;
-  setNsfwPhase: (phase: NsfwPhase) => void;
-  nsfwChar: string | null;
-  setNsfwChar: (char: string | null) => void;
-  // ── 当前场景中的角色（用于判断 NSFW 触发） ──
-  currentSceneChar: string | null;
-  setCurrentSceneChar: (char: string | null) => void;
   isCalendarOpen: boolean;
   setIsCalendarOpen: (v: boolean) => void;
   isMapOpen: boolean;
@@ -84,6 +73,28 @@ type GameContextType = {
   startGenerating: () => void;
   /** 结束生成：解锁 */
   finishGenerating: () => void;
+  // ── NSFW CG 模式 ──
+  /** 是否处于 NSFW 模式 */
+  isNsfwMode: boolean;
+  /** 当前 NSFW 阶段索引 */
+  nsfwStageIndex: number;
+  /** 当前 NSFW 角色名（进入模式时确定） */
+  nsfwCharacter: string | null;
+  /** 进入 NSFW 模式 */
+  enterNsfwMode: (character: string) => void;
+  /** 退出 NSFW 模式 */
+  exitNsfwMode: () => void;
+  /** 切换到下一个 NSFW 阶段 */
+  nextNsfwStage: () => void;
+  /** 切换到上一个 NSFW 阶段 */
+  prevNsfwStage: () => void;
+  // ── NSFW CG 解锁状态 ──
+  /** 已解锁的 NSFW CG 角色集合 */
+  unlockedNsfwChars: Set<string>;
+  /** 检查某角色的 NSFW CG 是否已解锁 */
+  isNsfwUnlocked: (character: string) => boolean;
+  /** 解锁某角色的 NSFW CG（持久化到角色卡变量） */
+  unlockNsfw: (character: string) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -209,11 +220,6 @@ const EMPTY_DISPATCH: MvuDispatchData = {
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [currentOrder, setCurrentOrder] = useState<CurrentOrder>(null);
-  // ── NSFW 状态 ──
-  const [nsfwEnabled, setNsfwEnabled] = useState(false);
-  const [nsfwPhase, setNsfwPhase] = useState<NsfwPhase>('开始');
-  const [nsfwChar, setNsfwChar] = useState<string | null>(null);
-  const [currentSceneChar, setCurrentSceneChar] = useState<string | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isEyeCareMode, setIsEyeCareMode] = useState(false);
@@ -227,6 +233,67 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [remainingDebt, setRemainingDebt] = useState(300_000_000);
 
   const [characterServiceStates, setCharacterServiceStates] = useState<Record<string, CharacterServiceState>>({});
+
+  // ── NSFW CG 模式状态 ──
+  const [isNsfwMode, setIsNsfwMode] = useState(false);
+  const [nsfwStageIndex, setNsfwStageIndex] = useState(0);
+  const [nsfwCharacter, setNsfwCharacter] = useState<string | null>(null);
+
+  const enterNsfwMode = useCallback((character: string) => {
+    setNsfwCharacter(character);
+    setNsfwStageIndex(0);
+    setIsNsfwMode(true);
+    console.info(`[NSFW] 进入 ${character} 的 NSFW 模式`);
+  }, []);
+
+  const exitNsfwMode = useCallback(() => {
+    setIsNsfwMode(false);
+    setNsfwStageIndex(0);
+    setNsfwCharacter(null);
+    console.info('[NSFW] 退出 NSFW 模式');
+  }, []);
+
+  const nextNsfwStage = useCallback(() => {
+    setNsfwStageIndex(prev => prev + 1);
+  }, []);
+
+  const prevNsfwStage = useCallback(() => {
+    setNsfwStageIndex(prev => Math.max(0, prev - 1));
+  }, []);
+
+  // ── NSFW CG 解锁状态（持久化到角色卡变量） ──
+  const [unlockedNsfwChars, setUnlockedNsfwChars] = useState<Set<string>>(() => {
+    // 从角色卡变量读取已解锁的 NSFW 角色
+    try {
+      const saved = getVariables({ type: 'character' })?.unlockedNsfwChars;
+      if (Array.isArray(saved)) {
+        return new Set(saved as string[]);
+      }
+    } catch {
+      // 忽略错误
+    }
+    return new Set<string>();
+  });
+
+  const isNsfwUnlocked = useCallback((character: string): boolean => {
+    return unlockedNsfwChars.has(character);
+  }, [unlockedNsfwChars]);
+
+  const unlockNsfw = useCallback((character: string) => {
+    setUnlockedNsfwChars(prev => {
+      if (prev.has(character)) return prev;
+      const next = new Set(prev);
+      next.add(character);
+      // 持久化到角色卡变量
+      try {
+        replaceVariables({ unlockedNsfwChars: Array.from(next) }, { type: 'character' });
+        console.info(`[NSFW] 解锁 ${character} 的 CG，已持久化到角色卡变量`);
+      } catch (e) {
+        console.warn('[NSFW] 持久化解锁状态失败:', e);
+      }
+      return next;
+    });
+  }, []);
 
   // ── 前端输入栏文本管道：地图/派单写入，ChatBar 消费 ──
   const [pendingMessage, setPendingMessage] = useState('');
@@ -552,11 +619,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   return (
     <GameContext.Provider value={{
       currentOrder, setCurrentOrder,
-      // ── NSFW 状态 ──
-      nsfwEnabled, setNsfwEnabled,
-      nsfwPhase, setNsfwPhase,
-      nsfwChar, setNsfwChar,
-      currentSceneChar, setCurrentSceneChar,
       isCalendarOpen, setIsCalendarOpen,
       isMapOpen, setIsMapOpen,
       totalDebt, totalIncome, remainingDebt,
@@ -573,6 +635,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       generatingFloorId,
       startGenerating,
       finishGenerating,
+      // NSFW
+      isNsfwMode,
+      nsfwStageIndex,
+      nsfwCharacter,
+      enterNsfwMode,
+      exitNsfwMode,
+      nextNsfwStage,
+      prevNsfwStage,
+      // NSFW 解锁
+      unlockedNsfwChars,
+      isNsfwUnlocked,
+      unlockNsfw,
     }}>
       {children}
     </GameContext.Provider>

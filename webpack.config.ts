@@ -120,6 +120,13 @@ function schema_dump(compiler: webpack.Compiler) {
   if (!watcher) {
     watcher = watch('src', {
       awaitWriteFinish: true,
+      ignored: [
+        '**/assets/**',
+        '**/.aistudio/**',
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/*.map',
+      ],
     }).on('all', (_event, path) => {
       if (path.endsWith('schema.ts')) {
         dump_debounced();
@@ -194,7 +201,16 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     },
     devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
     watchOptions: {
-      ignored: ['**/dist', '**/node_modules'],
+      ignored: [
+        '**/dist/**',
+        '**/node_modules/**',
+        '**/assets/**',
+        '**/.aistudio/**',
+        '**/*.map',
+        '**/*.json',
+        '**/导入到酒馆中/**',
+      ],
+      aggregateTimeout: 1000,
     },
     entry: path.join(import.meta.dirname, entry.script),
     target: 'browserslist',

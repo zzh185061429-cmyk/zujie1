@@ -94,12 +94,12 @@ function AppContent() {
 
   return (
     <div 
-      className="w-full h-screen flex items-center justify-center overflow-hidden"
+      className="w-full h-dvh flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: '#1a1a1a' }}
     >
       <div 
         className={cn(
-          "flex flex-col bg-pop-black overflow-hidden font-sans relative transition-all duration-300 w-full h-screen",
+          "flex flex-col bg-pop-black overflow-hidden font-sans relative transition-all duration-300 w-full h-full",
         )}
         style={{ filter: isEyeCareMode ? 'sepia(0.2) brightness(0.9) contrast(0.95)' : 'none' }}
       >
@@ -174,7 +174,7 @@ function AppContent() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 relative w-full h-full overflow-hidden bg-white">
+        <main className="flex-1 relative w-full h-dvh overflow-hidden bg-white">
           {activeTab === 'story' && <StoryView />}
           {activeTab === 'dispatch' && <DispatchView />}
           {activeTab === 'archive' && <ArchiveView />}

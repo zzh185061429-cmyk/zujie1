@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { PopCard } from "./ui/PopCard";
-import { Clock, MapPin, User, Briefcase, Eye, EyeOff, Menu, X, Maximize2, Minimize2, Brain, Database, BookText, Trash2, RefreshCw, ChevronUp, ChevronDown, Heart } from "lucide-react";
+import { Clock, MapPin, User, Briefcase, Eye, EyeOff, Menu, X, Maximize2, Minimize2, Brain, Database, BookText, Trash2, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useGameContext } from "../state/GameContext";
-import { canTriggerNsfw, NSFW_LOCATIONS } from "../data/characterData";
 import { CalendarModal } from "./modals/CalendarModal";
 import { MapModal } from "./modals/MapModal";
 import { cn } from "../utils";
@@ -24,16 +23,10 @@ interface HUDProps {
 }
 
 export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFullscreen, onOpenThinking, onOpenVariables, onOpenReading, onOpenDelete, onRegenerate, regenerating, isGenerating = false }: HUDProps) {
-  const { currentOrder, setIsCalendarOpen, setIsMapOpen, totalDebt, totalIncome, remainingDebt, isEyeCareMode, setIsEyeCareMode, gameTime, currentWeekday, currentLocation, nsfwEnabled, setNsfwEnabled, nsfwChar, setNsfwChar, setNsfwPhase, currentSceneChar } = useGameContext();
+  const { currentOrder, setIsCalendarOpen, setIsMapOpen, totalDebt, totalIncome, remainingDebt, isEyeCareMode, setIsEyeCareMode, gameTime, currentWeekday, currentLocation } = useGameContext();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const progress = totalDebt > 0 ? Math.min(100, Math.max(0, (totalIncome / totalDebt) * 100)) : 0;
-
-  // ── NSFW 按钮逻辑 ──
-  // 使用当前场景中的角色（StoryView 解析到的角色）判断 NSFW 触发
-  const activeNsfwChar = currentSceneChar || nsfwChar || '';
-  const isNsfwLocationValid = activeNsfwChar ? canTriggerNsfw(activeNsfwChar, currentLocation) : false;
-  const nsfwLocationName = activeNsfwChar ? NSFW_LOCATIONS[activeNsfwChar] || '未知' : '未知';
 
   return (
     <>
@@ -103,7 +96,6 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
                     {currentWeekday || ['周日','周一','周二','周三','周四','周五','周六'][gameTime.getDay()]} {gameTime.getMonth() + 1}月{String(gameTime.getDate()).padStart(2, '0')}日 {gameTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </PopCard>
-
                 <div className="flex gap-2">
                   <PopCard
                     onClick={() => setIsMapOpen(true)}
@@ -395,35 +387,6 @@ export function HUD({ isSidebarOpen, onToggleSidebar, isFullscreen, onToggleFull
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {/* NSFW 按钮 — 大屏 */}
-                <PopCard
-                  onClick={() => {
-                    if (!isNsfwLocationValid) return;
-                    if (nsfwEnabled) {
-                      // 关闭 NSFW
-                      setNsfwEnabled(false);
-                      setNsfwChar(null);
-                    } else {
-                      // 开启 NSFW
-                      setNsfwEnabled(true);
-                      setNsfwChar(activeNsfwChar);
-                      setNsfwPhase('开始');
-                    }
-                  }}
-                  className={cn(
-                    "py-1 px-3 flex items-center justify-center gap-2 clip-diagonal border-2 border-white shadow-[2px_2px_0_#1a1a1a] transition-colors duration-300 cursor-pointer",
-                    !activeNsfwChar ? "bg-gray-700 text-gray-400 cursor-not-allowed" :
-                    !isNsfwLocationValid ? "bg-gray-700 text-gray-400 cursor-not-allowed" :
-                    nsfwEnabled ? "bg-pop-pink text-white hover:bg-pop-pink/80" : "bg-pop-black text-white hover:bg-pop-pink"
-                  )}
-                  title={!activeNsfwChar ? "无角色" : !isNsfwLocationValid ? `需前往: ${nsfwLocationName}` : nsfwEnabled ? "关闭 NSFW" : "开启 NSFW"}
-                >
-                  <Heart className={cn("w-4 h-4 shrink-0", nsfwEnabled && "fill-current")} />
-                  <span className="font-bold text-sm whitespace-nowrap">
-                    {!activeNsfwChar ? 'NSFW' : !isNsfwLocationValid ? '未解锁' : nsfwEnabled ? 'NSFW 开' : 'NSFW'}
-                  </span>
-                </PopCard>
               </div>
 
             </div>

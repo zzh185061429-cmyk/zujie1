@@ -95,9 +95,6 @@ body {
   background-color: #f0f0f0;
   color: var(--color-pop-black);
   overflow-x: hidden;
-  /* 防止移动端键盘弹出时页面闪烁 */
-  min-height: 100vh;
-  min-height: 100svh;
 }
 
 /* 安全区适配 */
